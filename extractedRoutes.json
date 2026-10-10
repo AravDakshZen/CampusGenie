@@ -1,0 +1,1031 @@
+[
+  {
+    "sno": 1,
+    "rno": "1",
+    "rname": "Ennore",
+    "link": "../routes/n01.php",
+    "startingTime": "5:40 AM"
+  },
+  {
+    "sno": 2,
+    "rno": "1B",
+    "rname": "Beach Station",
+    "link": "../routes/n01b.php",
+    "startingTime": "6:18 AM"
+  },
+  {
+    "sno": 3,
+    "rno": "1C",
+    "rname": "Tondiarpet (RTO Office)",
+    "link": "../routes/n01c.php",
+    "startingTime": "6:05 AM"
+  },
+  {
+    "sno": 4,
+    "rno": "2",
+    "rname": "Tondiarpet",
+    "link": "../routes/n02.php",
+    "startingTime": "6:10 AM"
+  },
+  {
+    "sno": 5,
+    "rno": "2B",
+    "rname": "Ajax",
+    "link": "../routes/n02b.php",
+    "startingTime": "5:50 AM"
+  },
+  {
+    "sno": 6,
+    "rno": "2C",
+    "rname": "Mint",
+    "link": "../routes/n02c.php",
+    "startingTime": "6:10 AM"
+  },
+  {
+    "sno": 7,
+    "rno": "3",
+    "rname": "Choolai",
+    "link": "../routes/n03.php",
+    "startingTime": "6:15 AM"
+  },
+  {
+    "sno": 8,
+    "rno": "3B",
+    "rname": "Kilpauk Kallarai",
+    "link": "../routes/n03b.php",
+    "startingTime": "6:35 AM"
+  },
+  {
+    "sno": 9,
+    "rno": "3C",
+    "rname": "Doveton Bridge",
+    "link": "../routes/n03c.php",
+    "startingTime": "6:15 AM"
+  },
+  {
+    "sno": 10,
+    "rno": "4",
+    "rname": "Chintadripet",
+    "link": "../routes/n04.php",
+    "startingTime": "6:15 AM"
+  },
+  {
+    "sno": 11,
+    "rno": "4C",
+    "rname": "Loyola College",
+    "link": "../routes/n04c.php",
+    "startingTime": "6:30 AM"
+  },
+  {
+    "sno": 12,
+    "rno": "5",
+    "rname": "Chintamani",
+    "link": "../routes/n05.php",
+    "startingTime": "6:25 AM"
+  },
+  {
+    "sno": 13,
+    "rno": "5A",
+    "rname": "Arumbakkam",
+    "link": "../routes/n05a.php",
+    "startingTime": "6:35 AM"
+  },
+  {
+    "sno": 14,
+    "rno": "5B",
+    "rname": "Maduravoyal Erikarai",
+    "link": "../routes/n05b.php",
+    "startingTime": "7:00 AM"
+  },
+  {
+    "sno": 15,
+    "rno": "5C",
+    "rname": "Thirunagar (Ambica Empire Hotel)",
+    "link": "../routes/n05c.php",
+    "startingTime": "6:40 AM"
+  },
+  {
+    "sno": 16,
+    "rno": "5D",
+    "rname": "Toyota Showroom",
+    "link": "../routes/n05d.php",
+    "startingTime": "6:50 AM"
+  },
+  {
+    "sno": 17,
+    "rno": "6",
+    "rname": "New Avadi Road Water Tank",
+    "link": "../routes/n06.php",
+    "startingTime": "6:25 AM"
+  },
+  {
+    "sno": 18,
+    "rno": "6A",
+    "rname": "Krishna Nagar (Vellammal School)",
+    "link": "../routes/n06a.php",
+    "startingTime": "6:45 AM"
+  },
+  {
+    "sno": 19,
+    "rno": "7",
+    "rname": "Anna Nagar East",
+    "link": "../routes/n07.php",
+    "startingTime": "6:35 AM"
+  },
+  {
+    "sno": 20,
+    "rno": "7C",
+    "rname": "Collector nagar",
+    "link": "../routes/n07c.php",
+    "startingTime": "6:40 AM"
+  },
+  {
+    "sno": 21,
+    "rno": "8",
+    "rname": "Anna nagar West Depot",
+    "link": "../routes/n08.php",
+    "startingTime": "6:40 AM"
+  },
+  {
+    "sno": 22,
+    "rno": "8C",
+    "rname": "Waves",
+    "link": "../routes/n08c.php",
+    "startingTime": "6:40 AM"
+  },
+  {
+    "sno": 23,
+    "rno": "9",
+    "rname": "Mogappair East",
+    "link": "../routes/n09.php",
+    "startingTime": "6:40 AM"
+  },
+  {
+    "sno": 24,
+    "rno": "9A",
+    "rname": "Mogappair (Golden Flat)",
+    "link": "../routes/n09a.php",
+    "startingTime": "6:55 AM"
+  },
+  {
+    "sno": 25,
+    "rno": "9B",
+    "rname": "Mogappair",
+    "link": "../routes/n09b.php",
+    "startingTime": "6:45 AM"
+  },
+  {
+    "sno": 26,
+    "rno": "9C",
+    "rname": "Mogappair west",
+    "link": "../routes/n09c.php",
+    "startingTime": "6:50 AM"
+  },
+  {
+    "sno": 27,
+    "rno": "10",
+    "rname": "Vyasarpadi (Erikarai)",
+    "link": "../routes/n10.php",
+    "startingTime": "6:10 AM"
+  },
+  {
+    "sno": 28,
+    "rno": "10B",
+    "rname": "ICF",
+    "link": "../routes/n10b.php",
+    "startingTime": "6:30 AM"
+  },
+  {
+    "sno": 29,
+    "rno": "10C",
+    "rname": "Binny Mill Church",
+    "link": "../routes/n10c.php",
+    "startingTime": "6:15 AM"
+  },
+  {
+    "sno": 30,
+    "rno": "11",
+    "rname": "Moolakadai",
+    "link": "../routes/n11.php",
+    "startingTime": "6:15 AM"
+  },
+  {
+    "sno": 31,
+    "rno": "11A",
+    "rname": "Retteri (RTO Office)",
+    "link": "../routes/n11a.php",
+    "startingTime": "6:35 AM"
+  },
+  {
+    "sno": 32,
+    "rno": "11C",
+    "rname": "Korattur",
+    "link": "../routes/n11c.php",
+    "startingTime": "6:30 AM"
+  },
+  {
+    "sno": 33,
+    "rno": "12",
+    "rname": "MKB Nagar",
+    "link": "../routes/n12.php",
+    "startingTime": "6:15 AM"
+  },
+  {
+    "sno": 34,
+    "rno": "12A",
+    "rname": "Venus",
+    "link": "../routes/n12a.php",
+    "startingTime": "6:25 AM"
+  },
+  {
+    "sno": 35,
+    "rno": "12B",
+    "rname": "Kolathur",
+    "link": "../routes/n12b.php",
+    "startingTime": "6:15 AM"
+  },
+  {
+    "sno": 36,
+    "rno": "12C",
+    "rname": "Perambur",
+    "link": "../routes/n12c.php",
+    "startingTime": "6:10 AM"
+  },
+  {
+    "sno": 37,
+    "rno": "13",
+    "rname": "Peravallur",
+    "link": "../routes/n13.php",
+    "startingTime": "6:20 AM"
+  },
+  {
+    "sno": 38,
+    "rno": "13A",
+    "rname": "Kolathur (Don Bosco School)",
+    "link": "../routes/n13a.php",
+    "startingTime": "6:30 AM"
+  },
+  {
+    "sno": 39,
+    "rno": "13B",
+    "rname": "T.V.K Nagar",
+    "link": "../routes/n13b.php",
+    "startingTime": "6:15 AM"
+  },
+  {
+    "sno": 40,
+    "rno": "13C",
+    "rname": "Poombukar Nagar",
+    "link": "../routes/n13c.php",
+    "startingTime": "6:20 AM"
+  },
+  {
+    "sno": 41,
+    "rno": "13D",
+    "rname": "Temple School",
+    "link": "../routes/n13d.php",
+    "startingTime": "6:30 AM"
+  },
+  {
+    "sno": 42,
+    "rno": "14",
+    "rname": "Manali",
+    "link": "../routes/n14.php",
+    "startingTime": "6:10 AM"
+  },
+  {
+    "sno": 43,
+    "rno": "14C",
+    "rname": "Veterinary college (mathur)",
+    "link": "../routes/n14c.php",
+    "startingTime": "6:15 AM"
+  },
+  {
+    "sno": 44,
+    "rno": "15",
+    "rname": "Ayappakkam",
+    "link": "../routes/n15.php",
+    "startingTime": "6:30 AM"
+  },
+  {
+    "sno": 45,
+    "rno": "15A",
+    "rname": "Ayappakkam Water Tank",
+    "link": "../routes/n15a.php",
+    "startingTime": "6:40 AM"
+  },
+  {
+    "sno": 46,
+    "rno": "15B",
+    "rname": "Thirumullaivoyal",
+    "link": "../routes/n15b.php",
+    "startingTime": "6:40 AM"
+  },
+  {
+    "sno": 47,
+    "rno": "15C",
+    "rname": "Ambattur OT",
+    "link": "../routes/n15c.php",
+    "startingTime": "6:30 AM"
+  },
+  {
+    "sno": 48,
+    "rno": "15D",
+    "rname": "Ayappakkam (Pillaiyar kovil)",
+    "link": "../routes/n15d.php",
+    "startingTime": "6:30 AM"
+  },
+  {
+    "sno": 49,
+    "rno": "15E",
+    "rname": "Vinayagapuram",
+    "link": "../routes/n15e.php",
+    "startingTime": "6:15 AM"
+  },
+  {
+    "sno": 50,
+    "rno": "15F",
+    "rname": "Dunlop",
+    "link": "../routes/n15f.php",
+    "startingTime": "6:30 AM"
+  },
+  {
+    "sno": 51,
+    "rno": "16",
+    "rname": "Redhills",
+    "link": "../routes/n16.php",
+    "startingTime": "6:15 AM"
+  },
+  {
+    "sno": 52,
+    "rno": "16A",
+    "rname": "Kallikuppam",
+    "link": "../routes/n16a.php",
+    "startingTime": "6:25 AM"
+  },
+  {
+    "sno": 53,
+    "rno": "16B",
+    "rname": "Puzhal",
+    "link": "../routes/n16b.php",
+    "startingTime": "6:20 AM"
+  },
+  {
+    "sno": 54,
+    "rno": "16C",
+    "rname": "Puzhal Bypass",
+    "link": "../routes/n16c.php",
+    "startingTime": "6:20 AM"
+  },
+  {
+    "sno": 55,
+    "rno": "16D",
+    "rname": "Gandhinagar Police Booth (Redhills)",
+    "link": "../routes/n16d.php",
+    "startingTime": "6:00 AM"
+  },
+  {
+    "sno": 56,
+    "rno": "16E",
+    "rname": "Oragadam (Ambattur)",
+    "link": "../routes/n16e.php",
+    "startingTime": "6:30 AM"
+  },
+  {
+    "sno": 57,
+    "rno": "17",
+    "rname": "Thiruvallur",
+    "link": "../routes/n17.php",
+    "startingTime": "6:45 AM"
+  },
+  {
+    "sno": 58,
+    "rno": "17A",
+    "rname": "Veppampattu (Kandhan Kollai)",
+    "link": "../routes/n17a.php",
+    "startingTime": "6:30 AM"
+  },
+  {
+    "sno": 59,
+    "rno": "17B",
+    "rname": "Thiruvallur (Vasantha Bhavan)",
+    "link": "../routes/n17b.php",
+    "startingTime": "6:45 AM"
+  },
+  {
+    "sno": 60,
+    "rno": "17C",
+    "rname": "Sevvapet",
+    "link": "../routes/n17c.php",
+    "startingTime": "6:35 AM"
+  },
+  {
+    "sno": 61,
+    "rno": "17D",
+    "rname": "Veppampattu",
+    "link": "../routes/n17d.php",
+    "startingTime": "6:30 AM"
+  },
+  {
+    "sno": 62,
+    "rno": "17E",
+    "rname": "Nemilichery Roundana",
+    "link": "../routes/n17e.php",
+    "startingTime": "6:35 AM"
+  },
+  {
+    "sno": 63,
+    "rno": "17F",
+    "rname": "Thiruvallur (New Bus Stand)",
+    "link": "../routes/n17f.php",
+    "startingTime": "6:45 AM"
+  },
+  {
+    "sno": 64,
+    "rno": "17G",
+    "rname": "Thiruvallur (Oil Mill)",
+    "link": "../routes/n17g.php",
+    "startingTime": "6:45 AM"
+  },
+  {
+    "sno": 65,
+    "rno": "18",
+    "rname": "Avadi",
+    "link": "../routes/n18.php",
+    "startingTime": "6:40 AM"
+  },
+  {
+    "sno": 66,
+    "rno": "18A",
+    "rname": "Ambattur Stedford Hospital",
+    "link": "../routes/n18a.php",
+    "startingTime": "6:40 AM"
+  },
+  {
+    "sno": 67,
+    "rno": "18B",
+    "rname": "Avadi (GRT)",
+    "link": "../routes/n18b.php",
+    "startingTime": "6:45 AM"
+  },
+  {
+    "sno": 68,
+    "rno": "18C",
+    "rname": "Avadi Market",
+    "link": "../routes/n18c.php",
+    "startingTime": "6:45 AM"
+  },
+  {
+    "sno": 69,
+    "rno": "18D",
+    "rname": "Kollumedu (GH)",
+    "link": "../routes/n18d.php",
+    "startingTime": "6:20 AM"
+  },
+  {
+    "sno": 70,
+    "rno": "18E",
+    "rname": "Vel Tech junction",
+    "link": "../routes/n18e.php",
+    "startingTime": "6:20 AM"
+  },
+  {
+    "sno": 71,
+    "rno": "18F",
+    "rname": "Avadi Check Post",
+    "link": "../routes/n18f.php",
+    "startingTime": "6:45 AM"
+  },
+  {
+    "sno": 72,
+    "rno": "19",
+    "rname": "SP Kovil",
+    "link": "../routes/n19.php",
+    "startingTime": "6:30 AM"
+  },
+  {
+    "sno": 73,
+    "rno": "19A",
+    "rname": "Perungalathur",
+    "link": "../routes/n19a.php",
+    "startingTime": "6:35 AM"
+  },
+  {
+    "sno": 74,
+    "rno": "19B",
+    "rname": "Varatharaja Theatre",
+    "link": "../routes/n19b.php",
+    "startingTime": "6:35 AM"
+  },
+  {
+    "sno": 75,
+    "rno": "19C",
+    "rname": "Hasthinapuram",
+    "link": "../routes/n19c.php",
+    "startingTime": "6:30 AM"
+  },
+  {
+    "sno": 76,
+    "rno": "19D",
+    "rname": "Urapakkam",
+    "link": "../routes/n19d.php",
+    "startingTime": "6:35 AM"
+  },
+  {
+    "sno": 77,
+    "rno": "19E",
+    "rname": "Tambaram (MCC)",
+    "link": "../routes/n19e.php",
+    "startingTime": "6:20 AM"
+  },
+  {
+    "sno": 78,
+    "rno": "19F",
+    "rname": "Maraimalai Nagar",
+    "link": "../routes/n19f.php",
+    "startingTime": "6:20 AM"
+  },
+  {
+    "sno": 79,
+    "rno": "20",
+    "rname": "Kamatchi Hospital (Pallikaranai)",
+    "link": "../routes/n20.php",
+    "startingTime": "6:15 AM"
+  },
+  {
+    "sno": 80,
+    "rno": "20A",
+    "rname": "Sembakkam",
+    "link": "../routes/n20a.php",
+    "startingTime": "6:30 AM"
+  },
+  {
+    "sno": 81,
+    "rno": "20B",
+    "rname": "Mambakkam",
+    "link": "../routes/n20b.php",
+    "startingTime": "6:15 AM"
+  },
+  {
+    "sno": 82,
+    "rno": "20C",
+    "rname": "Madipakkam",
+    "link": "../routes/n20c.php",
+    "startingTime": "6:15 AM"
+  },
+  {
+    "sno": 83,
+    "rno": "20D",
+    "rname": "Nanmangalam",
+    "link": "../routes/n20d.php",
+    "startingTime": "6:25 AM"
+  },
+  {
+    "sno": 84,
+    "rno": "20E",
+    "rname": "Chrompet",
+    "link": "../routes/n20e.php",
+    "startingTime": "6:40 AM"
+  },
+  {
+    "sno": 85,
+    "rno": "20F",
+    "rname": "Bharath University",
+    "link": "../routes/n20f.php",
+    "startingTime": "6:35 AM"
+  },
+  {
+    "sno": 86,
+    "rno": "20G",
+    "rname": "Sembakkam",
+    "link": "../routes/n20g.php",
+    "startingTime": "6:35 AM"
+  },
+  {
+    "sno": 87,
+    "rno": "20H",
+    "rname": "Sanatorium",
+    "link": "../routes/n20h.php",
+    "startingTime": "6:40 AM"
+  },
+  {
+    "sno": 88,
+    "rno": "21",
+    "rname": "NGO Colony",
+    "link": "../routes/n21.php",
+    "startingTime": "6:20 AM"
+  },
+  {
+    "sno": 89,
+    "rno": "21A",
+    "rname": "Velachery",
+    "link": "../routes/n21a.php",
+    "startingTime": "6:15 AM"
+  },
+  {
+    "sno": 90,
+    "rno": "21C",
+    "rname": "Adambakkam",
+    "link": "../routes/n21c.php",
+    "startingTime": "6:15 AM"
+  },
+  {
+    "sno": 91,
+    "rno": "22",
+    "rname": "Sholinganallur (OMR)",
+    "link": "../routes/n22.php",
+    "startingTime": "5:50 AM"
+  },
+  {
+    "sno": 92,
+    "rno": "23",
+    "rname": "Kovilampakkam",
+    "link": "../routes/n23.php",
+    "startingTime": "6:15 AM"
+  },
+  {
+    "sno": 93,
+    "rno": "23C",
+    "rname": "Keelkatalai",
+    "link": "../routes/n23c.php",
+    "startingTime": "6:25 AM"
+  },
+  {
+    "sno": 94,
+    "rno": "24",
+    "rname": "Nanganallur",
+    "link": "../routes/n24.php",
+    "startingTime": "6:25 AM"
+  },
+  {
+    "sno": 95,
+    "rno": "24C",
+    "rname": "Pallavaram Bus stand",
+    "link": "../routes/n24c.php",
+    "startingTime": "6:40 AM"
+  },
+  {
+    "sno": 96,
+    "rno": "25",
+    "rname": "VGP (ECR)",
+    "link": "../routes/n25.php",
+    "startingTime": "6:00 AM"
+  },
+  {
+    "sno": 97,
+    "rno": "25C",
+    "rname": "Adyar",
+    "link": "../routes/n25c.php",
+    "startingTime": "6:15 AM"
+  },
+  {
+    "sno": 98,
+    "rno": "26",
+    "rname": "Triplicane",
+    "link": "../routes/n26.php",
+    "startingTime": "6:05 AM"
+  },
+  {
+    "sno": 99,
+    "rno": "26C",
+    "rname": "Teynampet",
+    "link": "../routes/n26c.php",
+    "startingTime": "6:15 AM"
+  },
+  {
+    "sno": 100,
+    "rno": "27",
+    "rname": "Pattinapakkam (Metro work)",
+    "link": "../routes/n27.php",
+    "startingTime": "6:00 AM"
+  },
+  {
+    "sno": 101,
+    "rno": "27C",
+    "rname": "Santhome (Light house)(Metro work)",
+    "link": "../routes/n27c.php",
+    "startingTime": "6:05 AM"
+  },
+  {
+    "sno": 102,
+    "rno": "28",
+    "rname": "Nungambakkam",
+    "link": "../routes/n28.php",
+    "startingTime": "6:15 AM"
+  },
+  {
+    "sno": 103,
+    "rno": "28B",
+    "rname": "Power House",
+    "link": "../routes/n28b.php",
+    "startingTime": "6:30 AM"
+  },
+  {
+    "sno": 104,
+    "rno": "28C",
+    "rname": "Lakshman Sruthi",
+    "link": "../routes/n28c.php",
+    "startingTime": "6:20 AM"
+  },
+  {
+    "sno": 105,
+    "rno": "29",
+    "rname": "Saligramam",
+    "link": "../routes/n29.php",
+    "startingTime": "6:20 AM"
+  },
+  {
+    "sno": 106,
+    "rno": "29C",
+    "rname": "Alwarthirunagar",
+    "link": "../routes/n29c.php",
+    "startingTime": "6:40 AM"
+  },
+  {
+    "sno": 107,
+    "rno": "30",
+    "rname": "Chinmaya Nagar",
+    "link": "../routes/n30.php",
+    "startingTime": "6:30 AM"
+  },
+  {
+    "sno": 108,
+    "rno": "30C",
+    "rname": "Elango Nagar",
+    "link": "../routes/n30c.php",
+    "startingTime": "6:30 AM"
+  },
+  {
+    "sno": 109,
+    "rno": "31",
+    "rname": "Valluvarkottam",
+    "link": "../routes/n31.php",
+    "startingTime": "6:15 AM"
+  },
+  {
+    "sno": 110,
+    "rno": "32",
+    "rname": "CIT.Nagar",
+    "link": "../routes/n32.php",
+    "startingTime": "6:15 AM"
+  },
+  {
+    "sno": 111,
+    "rno": "32C",
+    "rname": "Ashok Pillar",
+    "link": "../routes/n32c.php",
+    "startingTime": "6:20 AM"
+  },
+  {
+    "sno": 112,
+    "rno": "33",
+    "rname": "K.K.Nagar (Sivan park)",
+    "link": "../routes/n33.php",
+    "startingTime": "6:20 AM"
+  },
+  {
+    "sno": 113,
+    "rno": "33C",
+    "rname": "Nesapakkam",
+    "link": "../routes/n33c.php",
+    "startingTime": "6:35 AM"
+  },
+  {
+    "sno": 114,
+    "rno": "34",
+    "rname": "Porur Ramachandra",
+    "link": "../routes/n34.php",
+    "startingTime": "6:45 AM"
+  },
+  {
+    "sno": 115,
+    "rno": "34B",
+    "rname": "Iyyappanthangal Depot",
+    "link": "../routes/n34b.php",
+    "startingTime": "6:40 AM"
+  },
+  {
+    "sno": 116,
+    "rno": "34C",
+    "rname": "Iyyappanthangal",
+    "link": "../routes/n34c.php",
+    "startingTime": "6:40 AM"
+  },
+  {
+    "sno": 117,
+    "rno": "35",
+    "rname": "Pammal (Therasa School)",
+    "link": "../routes/n35.php",
+    "startingTime": "6:35 AM"
+  },
+  {
+    "sno": 118,
+    "rno": "35A",
+    "rname": "Mangadu",
+    "link": "../routes/n35a.php",
+    "startingTime": "6:50 AM"
+  },
+  {
+    "sno": 119,
+    "rno": "35B",
+    "rname": "Karima Nagar",
+    "link": "../routes/n35b.php",
+    "startingTime": "6:45 AM"
+  },
+  {
+    "sno": 120,
+    "rno": "35C",
+    "rname": "Kundrathur",
+    "link": "../routes/n35c.php",
+    "startingTime": "6:38 AM"
+  },
+  {
+    "sno": 121,
+    "rno": "35D",
+    "rname": "Pammal",
+    "link": "../routes/n35d.php",
+    "startingTime": "6:40 AM"
+  },
+  {
+    "sno": 122,
+    "rno": "35E",
+    "rname": "Kundrathur",
+    "link": "../routes/n35e.php",
+    "startingTime": "6:40 AM"
+  },
+  {
+    "sno": 123,
+    "rno": "36",
+    "rname": "Kovur",
+    "link": "../routes/n36.php",
+    "startingTime": "6:30 AM"
+  },
+  {
+    "sno": 124,
+    "rno": "36C",
+    "rname": "Madhanandapuram",
+    "link": "../routes/n36c.php",
+    "startingTime": "6:35 AM"
+  },
+  {
+    "sno": 125,
+    "rno": "37",
+    "rname": "DLF",
+    "link": "../routes/n37.php",
+    "startingTime": "6:45 AM"
+  },
+  {
+    "sno": 126,
+    "rno": "37A",
+    "rname": "Iyyappanthangal (Reliance Mart)",
+    "link": "../routes/n37a.php",
+    "startingTime": "6:50 AM"
+  },
+  {
+    "sno": 127,
+    "rno": "37B",
+    "rname": "Karayanchavadi",
+    "link": "../routes/n37b.php",
+    "startingTime": "7:05 AM"
+  },
+  {
+    "sno": 128,
+    "rno": "37C",
+    "rname": "Poonamallee Bus Stand",
+    "link": "../routes/n37c.php",
+    "startingTime": "7:05 AM"
+  },
+  {
+    "sno": 129,
+    "rno": "37D",
+    "rname": "Poonamallee Ambedkar statue",
+    "link": "../routes/n37d.php",
+    "startingTime": "7:00 AM"
+  },
+  {
+    "sno": 130,
+    "rno": "37E",
+    "rname": "Poonamallee",
+    "link": "../routes/n37e.php",
+    "startingTime": "7:00 AM"
+  },
+  {
+    "sno": 130,
+    "rno": "38",
+    "rname": "Housing Board",
+    "link": "../routes/n38.php",
+    "startingTime": "6:20 AM"
+  },
+  {
+    "sno": 131,
+    "rno": "38B",
+    "rname": "Kancheepuram Bus Stand",
+    "link": "../routes/n38b.php",
+    "startingTime": "6:30 AM"
+  },
+  {
+    "sno": 132,
+    "rno": "38C",
+    "rname": "Kancheepuram collectorate",
+    "link": "../routes/n38c.php",
+    "startingTime": "6:20 AM"
+  },
+  {
+    "sno": 133,
+    "rno": "39",
+    "rname": "Orikkai",
+    "link": "../routes/n39.php",
+    "startingTime": "6:10 AM"
+  },
+  {
+    "sno": 134,
+    "rno": "39C",
+    "rname": "Kancheepuram",
+    "link": "../routes/n39c.php",
+    "startingTime": "6:30 AM"
+  },
+  {
+    "sno": 135,
+    "rno": "40",
+    "rname": "Walajabad",
+    "link": "../routes/n40.php",
+    "startingTime": "6:15 AM"
+  },
+  {
+    "sno": 136,
+    "rno": "40A",
+    "rname": "Muthiyalpettai",
+    "link": "../routes/n40a.php",
+    "startingTime": "6:20 AM"
+  },
+  {
+    "sno": 137,
+    "rno": "40B",
+    "rname": "Rangasamy Kulam",
+    "link": "../routes/n40b.php",
+    "startingTime": "6:20 AM"
+  },
+  {
+    "sno": 138,
+    "rno": "40C",
+    "rname": "Kancheepuram Bus Stand",
+    "link": "../routes/n40c.php",
+    "startingTime": "6:30 AM"
+  },
+  {
+    "sno": 139,
+    "rno": "40D",
+    "rname": "Kancheepuram",
+    "link": "../routes/n40d.php",
+    "startingTime": "6:20 AM"
+  },
+  {
+    "sno": 140,
+    "rno": "41C",
+    "rname": "Vellore (Faculty & Staff only)",
+    "link": "../routes/n41c.php",
+    "startingTime": "5:10 AM"
+  },
+  {
+    "sno": 141,
+    "rno": "42",
+    "rname": "Arakkonam",
+    "link": "../routes/n42.php",
+    "startingTime": "6:08 AM"
+  },
+  {
+    "sno": 142,
+    "rno": "42A",
+    "rname": "S R Gate",
+    "link": "../routes/n42a.php",
+    "startingTime": "6:30 AM"
+  },
+  {
+    "sno": 143,
+    "rno": "42C",
+    "rname": "Arakkonam",
+    "link": "../routes/n42c.php",
+    "startingTime": "6:15 AM"
+  },
+  {
+    "sno": 144,
+    "rno": "42D",
+    "rname": "Suvalpet",
+    "link": "../routes/n42d.php",
+    "startingTime": "6:10 AM"
+  },
+  {
+    "sno": 145,
+    "rno": "44",
+    "rname": "Meenakshi College (KPM)",
+    "link": "../routes/n44.php",
+    "startingTime": "6:30 AM"
+  },
+  {
+    "sno": 146,
+    "rno": "45",
+    "rname": "Padappai",
+    "link": "../routes/n45.php",
+    "startingTime": "6:25 AM"
+  }
+]
