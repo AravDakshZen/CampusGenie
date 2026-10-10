@@ -95,41 +95,54 @@ export default function Faculty() {
           </div>
 
           {/* Demo Time Controller Box */}
-          <div className="bg-white/15 backdrop-blur-md p-4 rounded-2xl border border-white/20 text-xs space-y-2 shrink-0">
+          <div className="bg-white/15 backdrop-blur-md p-4 rounded-2xl border border-white/20 text-xs space-y-2.5 shrink-0">
             <div className="flex items-center justify-between gap-3 text-purple-100">
               <span className="font-semibold flex items-center gap-1.5">
                 <Clock className="w-3.5 h-3.5 text-white" /> Schedule Clock:
               </span>
-              <span className="font-mono font-bold bg-white text-[#6D28D9] px-2 py-0.5 rounded">
-                {demoDay} • {demoTime === "14:30" ? "2:30 PM" : demoTime === "11:15" ? "11:15 AM" : demoTime}
-              </span>
+              <div className="flex items-center gap-2">
+                <select
+                  value={demoDay}
+                  onChange={(e) => setDemoDay(e.target.value)}
+                  className="bg-white text-[#6D28D9] font-bold text-xs px-2 py-0.5 rounded cursor-pointer border-none outline-none"
+                >
+                  {["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"].map((d) => (
+                    <option key={d} value={d}>
+                      {d}
+                    </option>
+                  ))}
+                </select>
+                <span className="font-mono font-bold bg-white text-[#6D28D9] px-2 py-0.5 rounded">
+                  {demoTime === "14:30" ? "2:30 PM" : demoTime === "11:15" ? "11:15 AM" : demoTime === "17:30" ? "5:30 PM" : demoTime}
+                </span>
+              </div>
             </div>
             <p className="text-[11px] text-purple-200">
-              Switch time to test real schedule transitions:
+              Preset schedule checkpoints & live clock:
             </p>
-            <div className="flex items-center gap-1.5">
+            <div className="flex flex-wrap items-center gap-1.5">
               <button
-                onClick={() => setDemoTime("14:30")}
+                onClick={() => { setDemoDay("Monday"); setDemoTime("14:30"); }}
                 className={`px-2.5 py-1 rounded-lg font-semibold transition-all ${
-                  demoTime === "14:30"
+                  demoDay === "Monday" && demoTime === "14:30"
                     ? "bg-white text-[#6D28D9] shadow-sm"
                     : "bg-white/20 text-white hover:bg-white/30"
                 }`}
               >
-                2:30 PM (Revathi Avail.)
+                Mon 2:30 PM (Revathi)
               </button>
               <button
-                onClick={() => setDemoTime("11:15")}
+                onClick={() => { setDemoDay("Monday"); setDemoTime("11:15"); }}
                 className={`px-2.5 py-1 rounded-lg font-semibold transition-all ${
-                  demoTime === "11:15"
+                  demoDay === "Monday" && demoTime === "11:15"
                     ? "bg-white text-[#6D28D9] shadow-sm"
                     : "bg-white/20 text-white hover:bg-white/30"
                 }`}
               >
-                11:15 AM (Arun Avail.)
+                Mon 11:15 AM (Arun)
               </button>
               <button
-                onClick={() => setDemoTime("17:30")}
+                onClick={() => { setDemoDay("Monday"); setDemoTime("17:30"); }}
                 className={`px-2.5 py-1 rounded-lg font-semibold transition-all ${
                   demoTime === "17:30"
                     ? "bg-white text-[#6D28D9] shadow-sm"
@@ -137,6 +150,22 @@ export default function Faculty() {
                 }`}
               >
                 5:30 PM (After Hours)
+              </button>
+              <button
+                onClick={() => {
+                  const now = new Date();
+                  const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+                  let d = days[now.getDay()];
+                  if (d === "Sunday" || d === "Saturday") d = "Monday";
+                  const h = String(now.getHours()).padStart(2, "0");
+                  const m = String(now.getMinutes()).padStart(2, "0");
+                  setDemoDay(d);
+                  setDemoTime(`${h}:${m}`);
+                }}
+                className="px-2.5 py-1 rounded-lg font-semibold bg-emerald-500/80 hover:bg-emerald-500 text-white transition-all shadow-xs"
+                title="Sync with current system device time"
+              >
+                ⚡ Live Time
               </button>
             </div>
           </div>

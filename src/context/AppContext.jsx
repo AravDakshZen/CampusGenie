@@ -3,6 +3,7 @@ import { initialNotifications } from "../data/notificationData";
 import { initialLostFoundItems } from "../data/lostFoundData";
 import { studentInfo } from "../data/timetableData";
 import { facultyList, getFacultyAvailability } from "../data/facultyData";
+import { supabase, signInUser, signUpUser, signOutUser } from "../lib/supabase";
 
 const AppContext = createContext(null);
 
@@ -12,6 +13,8 @@ export function AppProvider({ children }) {
     const saved = localStorage.getItem("campus_genie_user");
     return saved ? JSON.parse(saved) : null;
   });
+
+  const [authLoading, setAuthLoading] = useState(true);
 
   // Notifications State
   const [notifications, setNotifications] = useState(() => {
@@ -31,7 +34,16 @@ export function AppProvider({ children }) {
     return saved ? JSON.parse(saved) : studentInfo;
   });
 
-  // Faculty Notification Subscriptions (faculty IDs student requested alerts for)
+  // Timetable Holds (array of class IDs currently marked on hold/suspended)
+  const [timetableHolds, setTimetableHolds] = useState(() => {
+    const saved = localStorage.getItem("campus_genie_holds");
+    return saved ? JSON.parse(saved) : ["mon-4"]; // default mock hold on Monday OS class
+  });
+
+  // Timetable Clock Lock (freeze/hold clock mode)
+  const [isTimetableClockLocked, setIsTimetableClockLocked] = useState(false);
+
+  // Faculty Notification Subscriptions
   const [facultyAlerts, setFacultyAlerts] = useState(["fac-revathi"]);
 
   // Demo Time Simulation (Default Monday 14:30 / 2:30 PM: Revathi Ma'am is Available 2-4 PM)
@@ -41,6 +53,11 @@ export function AppProvider({ children }) {
   // Chat prefilled question (when clicking "Ask AI" from other pages)
   const [activeChatPrompt, setActiveChatPrompt] = useState("");
 
+  // Gemini API Key (stored locally so user can test Gemini freely)
+  const [geminiApiKey, setGeminiApiKey] = useState(() => {
+    return localStorage.getItem("campus_genie_gemini_key") || "";
+  });
+
   // Settings
   const [settings, setSettings] = useState({
     notificationsEnabled: true,
@@ -49,12 +66,73 @@ export function AppProvider({ children }) {
     classRemindersEnabled: true,
     darkMode: false,
     soundEnabled: true,
+    useGeminiAI: true,
   });
 
   // Mobile sidebar drawer state
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // Sync state to localStorage
+  // Listen to Supabase Auth state changes
+  useEffect(() => {
+    let mounted = true;
+
+    async function initAuth() {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session && mounted) {
+          const userMeta = session.user.user_metadata || {};
+          const userObj = {
+            id: session.user.id,
+            email: session.user.email,
+            name: userMeta.full_name || profile.name || "Student",
+            rollNumber: userMeta.roll_number || profile.rollNumber || "23CSD101",
+            department: userMeta.department || profile.department || "Computer Science and Engineering",
+            year: userMeta.year || profile.year || "III Year",
+            loginTime: new Date().toISOString(),
+          };
+          setCurrentUser(userObj);
+          setProfile((prev) => ({
+            ...prev,
+            name: userObj.name,
+            rollNumber: userObj.rollNumber,
+            department: userObj.department,
+            collegeEmail: userObj.email,
+          }));
+        }
+      } catch (e) {
+        console.warn("Supabase session check:", e);
+      } finally {
+        if (mounted) setAuthLoading(false);
+      }
+    }
+
+    initAuth();
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) {
+        const userMeta = session.user.user_metadata || {};
+        const userObj = {
+          id: session.user.id,
+          email: session.user.email,
+          name: userMeta.full_name || profile.name || "Student",
+          rollNumber: userMeta.roll_number || profile.rollNumber || "23CSD101",
+          department: userMeta.department || profile.department || "Computer Science and Engineering",
+          year: userMeta.year || profile.year || "III Year",
+          loginTime: new Date().toISOString(),
+        };
+        setCurrentUser(userObj);
+      } else {
+        // if explicitly signed out from supabase
+      }
+    });
+
+    return () => {
+      mounted = false;
+      authListener?.subscription?.unsubscribe();
+    };
+  }, []);
+
+  // Sync states to localStorage
   useEffect(() => {
     if (currentUser) {
       localStorage.setItem("campus_genie_user", JSON.stringify(currentUser));
@@ -62,6 +140,14 @@ export function AppProvider({ children }) {
       localStorage.removeItem("campus_genie_user");
     }
   }, [currentUser]);
+
+  useEffect(() => {
+    localStorage.setItem("campus_genie_holds", JSON.stringify(timetableHolds));
+  }, [timetableHolds]);
+
+  useEffect(() => {
+    localStorage.setItem("campus_genie_gemini_key", geminiApiKey);
+  }, [geminiApiKey]);
 
   useEffect(() => {
     localStorage.setItem("campus_genie_notifs", JSON.stringify(notifications));
@@ -77,12 +163,10 @@ export function AppProvider({ children }) {
 
   // Dynamically synchronize notifications based on schedule and demo time
   useEffect(() => {
-    // 1. Calculate Revathi Ma'am availability
     const revathi = facultyList.find((f) => f.id === "fac-revathi");
     const revathiAvail = revathi ? getFacultyAvailability(revathi, demoTime, demoDay) : null;
     const isRevathiAvailable = revathiAvail?.status === "Available Now";
 
-    // 2. Calculate Arun Sir availability
     const arun = facultyList.find((f) => f.id === "fac-arun");
     const arunAvail = arun ? getFacultyAvailability(arun, demoTime, demoDay) : null;
     const isArunAvailable = arunAvail?.status === "Available Now";
@@ -90,7 +174,7 @@ export function AppProvider({ children }) {
     setNotifications((prev) => {
       let updated = [...prev];
 
-      // Handle Revathi notification (Requirement 10: Revathi Ma'am is available now!)
+      // Handle Revathi notification
       const revathiIndex = updated.findIndex(
         (n) => n.id === "notif-1" || n.id === "notif-revathi-avail" || n.title.includes("Revathi Ma'am is available now")
       );
@@ -116,7 +200,7 @@ export function AppProvider({ children }) {
         }
       }
 
-      // Handle Arun Sir notification
+      // Handle Arun notification
       const arunIndex = updated.findIndex(
         (n) => n.id === "notif-arun-avail" || n.title.includes("Arun Sir is available now")
       );
@@ -147,21 +231,98 @@ export function AppProvider({ children }) {
   }, [demoTime, demoDay]);
 
   // Auth actions
-  const login = (email) => {
-    const userObj = {
-      email,
-      name: profile.name,
-      rollNumber: profile.rollNumber,
-      department: profile.department,
-      year: profile.year,
-      loginTime: new Date().toISOString(),
-    };
-    setCurrentUser(userObj);
+  const login = async (email, password = "campusgenie123") => {
+    try {
+      const data = await signInUser(email, password);
+      const userMeta = data.user?.user_metadata || {};
+      const userObj = {
+        id: data.user?.id,
+        email,
+        name: userMeta.full_name || profile.name,
+        rollNumber: userMeta.roll_number || profile.rollNumber,
+        department: userMeta.department || profile.department,
+        year: userMeta.year || profile.year,
+        loginTime: new Date().toISOString(),
+      };
+      setCurrentUser(userObj);
+      return data;
+    } catch (err) {
+      // Fallback local sign in if network issue or demo mode
+      console.warn("Supabase auth warning, using local session:", err.message);
+      const userObj = {
+        email,
+        name: profile.name,
+        rollNumber: profile.rollNumber,
+        department: profile.department,
+        year: profile.year,
+        loginTime: new Date().toISOString(),
+      };
+      setCurrentUser(userObj);
+      return { user: userObj };
+    }
   };
 
-  const logout = () => {
+  const signup = async (userData) => {
+    try {
+      const data = await signUpUser(userData);
+      const userObj = {
+        id: data.user?.id,
+        email: userData.email,
+        name: userData.fullName,
+        rollNumber: userData.rollNumber,
+        department: userData.department,
+        year: userData.year || "III Year",
+        loginTime: new Date().toISOString(),
+      };
+      setCurrentUser(userObj);
+      setProfile((prev) => ({
+        ...prev,
+        name: userData.fullName,
+        rollNumber: userData.rollNumber,
+        department: userData.department,
+        collegeEmail: userData.email,
+      }));
+      return data;
+    } catch (err) {
+      console.error("Signup error:", err);
+      throw err;
+    }
+  };
+
+  const logout = async () => {
+    try {
+      await signOutUser();
+    } catch (e) {
+      console.warn("Sign out:", e);
+    }
     setCurrentUser(null);
     localStorage.removeItem("campus_genie_user");
+  };
+
+  // Timetable Hold Actions
+  const toggleTimetableHold = (classId) => {
+    setTimetableHolds((prev) => {
+      const exists = prev.includes(classId);
+      const next = exists ? prev.filter((id) => id !== classId) : [...prev, classId];
+      
+      // Notify student
+      addNotification({
+        title: exists ? `Class resumed` : `Class marked ON HOLD`,
+        subtitle: `Timetable schedule updated for period ${classId}.`,
+        category: "timetable",
+        icon: "Calendar",
+        actionLink: "/timetable",
+        details: exists
+          ? `The hold on class ${classId} was cleared and regular schedule restored.`
+          : `Class ${classId} has been placed on hold / suspended for today.`,
+      });
+
+      return next;
+    });
+  };
+
+  const toggleTimetableClockLock = () => {
+    setIsTimetableClockLocked((prev) => !prev);
   };
 
   // Notification actions
@@ -248,7 +409,9 @@ export function AppProvider({ children }) {
     <AppContext.Provider
       value={{
         currentUser,
+        authLoading,
         login,
+        signup,
         logout,
         notifications,
         unreadCount,
@@ -267,6 +430,12 @@ export function AppProvider({ children }) {
         setDemoTime,
         demoDay,
         setDemoDay,
+        timetableHolds,
+        toggleTimetableHold,
+        isTimetableClockLocked,
+        toggleTimetableClockLock,
+        geminiApiKey,
+        setGeminiApiKey,
         activeChatPrompt,
         setActiveChatPrompt,
         settings,

@@ -376,18 +376,18 @@ export const weeklyTimetable = {
 };
 
 /**
- * Returns the next upcoming class based on day and current time.
- * Falls back to Monday 10:00 AM DBMS / UI-UX Lab for demo highlight.
+ * Returns the next upcoming class based on day, current time, and hold status.
+ * Skips classes that are marked ON HOLD or breaks.
  */
-export function getNextClass(day = "Monday", time = "09:30") {
+export function getNextClass(day = "Monday", time = "09:30", timetableHolds = []) {
   const schedule = weeklyTimetable[day] || weeklyTimetable["Monday"];
   const upcoming = schedule.find(
-    (item) => item.type !== "Break" && item.startTime >= time
+    (item) => item.type !== "Break" && item.startTime >= time && !timetableHolds.includes(item.id)
   );
 
   if (upcoming) {
     return upcoming;
   }
-  // Otherwise, return first class of next day or first class of Monday
-  return schedule.find((item) => item.type !== "Break") || schedule[0];
+  // Otherwise, return first non-break, non-held class of the schedule
+  return schedule.find((item) => item.type !== "Break" && !timetableHolds.includes(item.id)) || schedule[0];
 }

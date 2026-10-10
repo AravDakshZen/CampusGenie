@@ -7,9 +7,17 @@ import {
   Bot,
   RotateCcw,
   Compass,
+  Key,
+  Settings,
+  Cpu,
+  Check,
+  ExternalLink,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import ChatMessage from "./ChatMessage";
 import { processUserQuery } from "../data/aiAssistantEngine";
+import { callGemini } from "../lib/gemini";
 import { useApp } from "../context/AppContext";
 
 export default function ChatBox() {
@@ -19,13 +27,15 @@ export default function ChatBox() {
     demoDay,
     activeChatPrompt,
     setActiveChatPrompt,
+    geminiApiKey,
+    setGeminiApiKey,
   } = useApp();
 
   const [messages, setMessages] = useState(() => [
     {
       id: "msg-welcome",
       sender: "ai",
-      text: "Hi! 👋 I'm Campus Genie. How can I help you today?",
+      text: "Hi! 👋 I'm Campus Genie, powered by Gemini & Rajalakshmi Campus Intelligence. How can I help you today?",
       time: "Just now",
       suggestions: [
         "Where is Bus 11 going?",
@@ -39,6 +49,11 @@ export default function ChatBox() {
   const [inputValue, setInputValue] = useState("");
   const [isThinking, setIsThinking] = useState(false);
   const [isListening, setIsListening] = useState(false);
+  const [useGemini, setUseGemini] = useState(true);
+  const [showKeyModal, setShowKeyModal] = useState(false);
+  const [tempApiKey, setTempApiKey] = useState(geminiApiKey || "");
+  const [keySavedMessage, setKeySavedMessage] = useState(false);
+
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
 
@@ -66,7 +81,6 @@ export default function ChatBox() {
     },
   ];
 
-  // Auto-scroll to bottom of chat
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -75,7 +89,6 @@ export default function ChatBox() {
     scrollToBottom();
   }, [messages, isThinking]);
 
-  // Handle incoming prompt from navigation ("Ask AI" button on transport/faculty cards)
   useEffect(() => {
     if (activeChatPrompt) {
       handleSend(activeChatPrompt);
@@ -83,7 +96,17 @@ export default function ChatBox() {
     }
   }, [activeChatPrompt]);
 
-  const handleSend = (textToSend) => {
+  const handleSaveApiKey = (e) => {
+    e.preventDefault();
+    setGeminiApiKey(tempApiKey.trim());
+    setKeySavedMessage(true);
+    setTimeout(() => {
+      setKeySavedMessage(false);
+      setShowKeyModal(false);
+    }, 1200);
+  };
+
+  const handleSend = async (textToSend) => {
     const query = (textToSend || inputValue).trim();
     if (!query || isThinking) return;
 
@@ -98,7 +121,31 @@ export default function ChatBox() {
     setInputValue("");
     setIsThinking(true);
 
-    // Simulate realistic AI thinking delay (600ms)
+    // If Gemini mode is enabled and user has provided an API key
+    if (useGemini && geminiApiKey && geminiApiKey.trim()) {
+      try {
+        const geminiResponse = await callGemini(query, geminiApiKey, {
+          demoTime,
+          demoDay,
+        });
+
+        const aiMessage = {
+          id: `ai-${Date.now()}`,
+          sender: "ai",
+          text: geminiResponse,
+          time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          badge: "⚡ Gemini 1.5 Flash",
+        };
+
+        setMessages((prev) => [...prev, aiMessage]);
+        setIsThinking(false);
+        return;
+      } catch (err) {
+        console.warn("Gemini API call failed, falling back to local engine:", err.message);
+      }
+    }
+
+    // Fallback to high-speed local REC engine
     setTimeout(() => {
       const response = processUserQuery(query, lostFoundItems, demoTime, demoDay);
       const aiMessage = {
@@ -109,11 +156,12 @@ export default function ChatBox() {
         cardData: response.cardData,
         items: response.items,
         time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        badge: "🏛️ REC Campus Engine",
       };
 
       setMessages((prev) => [...prev, aiMessage]);
       setIsThinking(false);
-    }, 600);
+    }, 500);
   };
 
   const handleKeyDown = (e) => {
@@ -123,7 +171,6 @@ export default function ChatBox() {
     }
   };
 
-  // Mock / Web Speech Voice Recognition
   const toggleVoice = () => {
     if (
       typeof window !== "undefined" &&
@@ -157,7 +204,6 @@ export default function ChatBox() {
         recognition.stop();
       }
     } else {
-      // Fallback voice toggle simulation
       setIsListening(!isListening);
       if (!isListening) {
         setInputValue("Where is Bus 11 going?");
@@ -182,26 +228,107 @@ export default function ChatBox() {
   return (
     <div className="flex flex-col h-[calc(100vh-140px)] max-w-4xl mx-auto bg-white rounded-3xl border border-purple-100 shadow-xl shadow-purple-600/5 overflow-hidden">
       {/* Chat Area Top Status */}
-      <div className="px-6 py-3 border-b border-purple-100/80 bg-[#FAF9FF] flex items-center justify-between">
+      <div className="px-6 py-3 border-b border-purple-100/80 bg-[#FAF9FF] flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
           <span className="text-xs font-semibold text-slate-700">
-            Campus Genie AI • Ready
+            Campus Genie AI
           </span>
-          <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-100 text-[#6D28D9] font-medium hidden sm:inline-block">
-            Rajalakshmi Campus Model
-          </span>
+
+          {/* Model Badge */}
+          <div className="flex items-center gap-1.5 ml-2">
+            <button
+              onClick={() => setUseGemini(!useGemini)}
+              className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold transition-all flex items-center gap-1 ${
+                useGemini
+                  ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-xs"
+                  : "bg-purple-100 text-[#6D28D9]"
+              }`}
+              title="Toggle between Google Gemini AI and Local REC Dataset"
+            >
+              <Sparkles className="w-3 h-3" />
+              <span>{useGemini ? "⚡ Google Gemini Mode" : "🏛️ REC Local Mode"}</span>
+            </button>
+
+            <button
+              onClick={() => setShowKeyModal(!showKeyModal)}
+              className={`p-1 rounded-lg text-xs transition-colors flex items-center gap-1 ${
+                geminiApiKey ? "text-emerald-700 bg-emerald-50" : "text-purple-600 bg-purple-50 hover:bg-purple-100"
+              }`}
+              title="Gemini API Key Settings"
+            >
+              <Key className="w-3.5 h-3.5" />
+              <span className="text-[10px] font-semibold hidden sm:inline">
+                {geminiApiKey ? "Key Linked" : "Set Gemini Key"}
+              </span>
+            </button>
+          </div>
         </div>
 
         <button
           onClick={resetChat}
-          className="flex items-center gap-1 text-xs text-slate-500 hover:text-[#6D28D9] hover:bg-purple-50 px-2.5 py-1 rounded-lg transition-colors"
+          className="flex items-center gap-1 text-xs text-slate-500 hover:text-[#6D28D9] hover:bg-purple-50 px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
           title="Reset Conversation"
         >
           <RotateCcw className="w-3.5 h-3.5" />
           <span>New Chat</span>
         </button>
       </div>
+
+      {/* Gemini API Key Configuration Banner */}
+      {showKeyModal && (
+        <div className="p-4 bg-gradient-to-r from-purple-50 to-indigo-50 border-b border-purple-200 animate-in slide-in-from-top-2 duration-200">
+          <div className="flex items-start justify-between gap-3 mb-2">
+            <div>
+              <h4 className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-purple-600" />
+                Configure Google Gemini AI
+              </h4>
+              <p className="text-[11px] text-slate-600 mt-0.5">
+                Add your Gemini API key from Google AI Studio (free). All queries will be grounded with Rajalakshmi bus routes, faculty cabins, and class timetables.
+              </p>
+            </div>
+            <a
+              href="https://aistudio.google.com/app/apikey"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[11px] font-semibold text-[#6D28D9] hover:underline flex items-center gap-1 shrink-0"
+            >
+              <span>Get Free Key</span>
+              <ExternalLink className="w-3 h-3" />
+            </a>
+          </div>
+
+          <form onSubmit={handleSaveApiKey} className="flex items-center gap-2 mt-2">
+            <input
+              type="password"
+              value={tempApiKey}
+              onChange={(e) => setTempApiKey(e.target.value)}
+              placeholder="Paste your Gemini API key (AIza...)"
+              className="flex-1 px-3 py-1.5 text-xs bg-white rounded-xl border border-purple-200 focus:outline-none focus:ring-2 focus:ring-purple-400"
+            />
+            <button
+              type="submit"
+              className="px-4 py-1.5 rounded-xl bg-[#6D28D9] hover:bg-[#4C1D95] text-white text-xs font-bold transition-all shadow-xs shrink-0"
+            >
+              Save Key
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowKeyModal(false)}
+              className="px-3 py-1.5 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-medium shrink-0"
+            >
+              Close
+            </button>
+          </form>
+
+          {keySavedMessage && (
+            <p className="text-[11px] text-emerald-600 font-semibold mt-1.5 flex items-center gap-1">
+              <Check className="w-3.5 h-3.5" /> API key saved successfully! Gemini AI activated.
+            </p>
+          )}
+        </div>
+      )}
 
       {/* Message Stream */}
       <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 space-y-4">
@@ -219,7 +346,9 @@ export default function ChatBox() {
             />
             <div className="bg-white border border-purple-100 rounded-2xl rounded-tl-sm px-4 py-3 shadow-sm flex items-center gap-2 text-xs font-medium text-purple-900">
               <Sparkles className="w-4 h-4 text-[#6D28D9] animate-pulse" />
-              <span>🤖 Campus Genie is thinking...</span>
+              <span>
+                {useGemini && geminiApiKey ? "🤖 Gemini AI is processing..." : "🤖 Campus Genie is thinking..."}
+              </span>
               <span className="inline-flex gap-1 ml-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-purple-600 animate-bounce"></span>
                 <span className="w-1.5 h-1.5 rounded-full bg-purple-600 animate-bounce [animation-delay:0.2s]"></span>
@@ -279,7 +408,11 @@ export default function ChatBox() {
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Ask anything about your campus..."
+            placeholder={
+              useGemini && geminiApiKey
+                ? "Ask Gemini about REC buses, cabins, timetables..."
+                : "Ask anything about Rajalakshmi campus..."
+            }
             className="flex-1 px-3 py-3 text-sm text-slate-800 placeholder-slate-400 bg-transparent focus:outline-none"
             disabled={isThinking}
           />
@@ -297,7 +430,11 @@ export default function ChatBox() {
         </div>
 
         <div className="flex items-center justify-between text-[11px] text-slate-400 mt-2 px-1">
-          <span>Campus Genie strictly verifies against Rajalakshmi local dataset.</span>
+          <span>
+            {useGemini && geminiApiKey
+              ? "⚡ Google Gemini AI grounded with REC campus knowledge"
+              : "🏛️ Powered by Rajalakshmi Local Campus Data & Gemini"}
+          </span>
           <span className="hidden sm:inline">Press Enter to send</span>
         </div>
       </div>

@@ -71,7 +71,12 @@ export default function ChatMessage({ message }) {
         }`}
       >
         <div className="flex items-center gap-2 mb-1 px-1 text-[11px] text-slate-400">
-          <span>{isAI ? "Campus Genie" : "You"}</span>
+          <span className="font-semibold text-slate-600">{isAI ? "Campus Genie" : "You"}</span>
+          {isAI && message.badge && (
+            <span className="px-1.5 py-0.2 rounded-md bg-purple-100 text-[#6D28D9] font-bold text-[10px]">
+              {message.badge}
+            </span>
+          )}
           <span>•</span>
           <span>{message.time || "Just now"}</span>
         </div>

@@ -122,14 +122,22 @@ export const facultyList = [
   },
 ];
 
-/**
- * Calculates real-time or demo schedule availability for a faculty member
- * @param {Object} faculty 
- * @param {string} [timeStr] e.g. "14:30" (24h format)
- * @param {string} [dayStr] e.g. "Monday"
- * @returns {{ status: 'Available Now' | 'Currently Unavailable' | 'Availability Not Updated', detail: string, slot?: Object }}
- */
-export function getFacultyAvailability(faculty, timeStr, dayStr) {
+export function getFacultyAvailability(faculty, timeStr, dayStr, statusOverride) {
+  if (statusOverride) {
+    if (statusOverride === "Available Now") {
+      return {
+        status: "Available Now",
+        detail: `Currently present in cabin ${faculty.cabin}`,
+      };
+    }
+    if (statusOverride === "Currently Unavailable") {
+      return {
+        status: "Currently Unavailable",
+        detail: `Faculty is currently out of cabin / in lecture`,
+      };
+    }
+  }
+
   if (!faculty.schedule || faculty.schedule.length === 0) {
     return {
       status: "Availability Not Updated",
@@ -137,15 +145,14 @@ export function getFacultyAvailability(faculty, timeStr, dayStr) {
     };
   }
 
-  // If timeStr and dayStr are not provided, determine from current system date or default to Monday 14:30
+  const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
   let day = dayStr;
   let time = timeStr;
 
   if (!day || !time) {
     const now = new Date();
-    const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-    day = days[now.getDay()];
-    // On weekends, default calculation to Monday for demo presentation
+    const allDays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    day = allDays[now.getDay()];
     if (day === "Sunday" || day === "Saturday") {
       day = "Monday";
     }
@@ -154,34 +161,74 @@ export function getFacultyAvailability(faculty, timeStr, dayStr) {
     time = `${hours}:${minutes}`;
   }
 
-  const daySlot = faculty.schedule.find(
-    (slot) => slot.day.toLowerCase() === day.toLowerCase()
-  );
+  const currentDayIndex = daysOfWeek.findIndex((d) => d.toLowerCase() === day.toLowerCase());
 
-  if (!daySlot) {
+  // 1. Check all slots for the current day
+  const todaySlots = faculty.schedule
+    .filter((slot) => slot.day.toLowerCase() === day.toLowerCase())
+    .sort((a, b) => a.start.localeCompare(b.start));
+
+  for (const slot of todaySlots) {
+    if (time >= slot.start && time <= slot.end) {
+      // Calculate remaining minutes
+      const [endH, endM] = slot.end.split(":").map(Number);
+      const [curH, curM] = time.split(":").map(Number);
+      const remainingMin = (endH * 60 + endM) - (curH * 60 + curM);
+      const remainingText = remainingMin > 60 
+        ? `${Math.floor(remainingMin / 60)}h ${remainingMin % 60}m left`
+        : `${remainingMin} min left`;
+
+      return {
+        status: "Available Now",
+        detail: `In cabin until ${format12Hour(slot.end)} (${remainingText})`,
+        slot,
+        remainingMinutes: remainingMin,
+      };
+    }
+  }
+
+  // 2. Check if there is an upcoming slot later today
+  const upcomingTodaySlot = todaySlots.find((slot) => slot.start > time);
+  if (upcomingTodaySlot) {
     return {
       status: "Currently Unavailable",
-      detail: `No scheduled consultation hours on ${day}`,
+      detail: `Next available: Today at ${format12Hour(upcomingTodaySlot.start)} (${upcomingTodaySlot.text})`,
+      slot: upcomingTodaySlot,
     };
   }
 
-  // Compare time HH:mm
-  if (time >= daySlot.start && time <= daySlot.end) {
-    return {
-      status: "Available Now",
-      detail: `In cabin until ${format12Hour(daySlot.end)}`,
-      slot: daySlot,
-    };
-  } else {
-    return {
-      status: "Currently Unavailable",
-      detail: `Next available: ${daySlot.text} (${daySlot.day})`,
-      slot: daySlot,
-    };
+  // 3. Search for the next available slot on subsequent days (wrapping around the week)
+  if (currentDayIndex !== -1) {
+    for (let offset = 1; offset <= 5; offset++) {
+      const nextDayIndex = (currentDayIndex + offset) % daysOfWeek.length;
+      const nextDayName = daysOfWeek[nextDayIndex];
+      const nextDaySlots = faculty.schedule
+        .filter((s) => s.day.toLowerCase() === nextDayName.toLowerCase())
+        .sort((a, b) => a.start.localeCompare(b.start));
+
+      if (nextDaySlots.length > 0) {
+        const nextSlot = nextDaySlots[0];
+        const dayLabel = offset === 1 ? "Tomorrow" : nextDayName;
+        return {
+          status: "Currently Unavailable",
+          detail: `Next available: ${dayLabel} (${nextSlot.day}) at ${format12Hour(nextSlot.start)}`,
+          slot: nextSlot,
+        };
+      }
+    }
   }
+
+  // If only 1 slot in the whole schedule
+  const fallbackSlot = faculty.schedule[0];
+  return {
+    status: "Currently Unavailable",
+    detail: `Next available: ${fallbackSlot.day} at ${format12Hour(fallbackSlot.start)}`,
+    slot: fallbackSlot,
+  };
 }
 
-function format12Hour(time24) {
+export function format12Hour(time24) {
+  if (!time24) return "";
   const [h, m] = time24.split(":").map(Number);
   const suffix = h >= 12 ? "PM" : "AM";
   const hours = h % 12 || 12;
