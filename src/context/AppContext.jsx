@@ -237,28 +237,26 @@ export function AppProvider({ children }) {
       const userMeta = data.user?.user_metadata || {};
       const userObj = {
         id: data.user?.id,
-        email,
-        name: userMeta.full_name || profile.name,
-        rollNumber: userMeta.roll_number || profile.rollNumber,
-        department: userMeta.department || profile.department,
-        year: userMeta.year || profile.year,
+        email: data.user?.email || email,
+        name: userMeta.full_name || profile.name || "Student",
+        rollNumber: userMeta.roll_number || profile.rollNumber || "23CSD101",
+        department: userMeta.department || profile.department || "Computer Science and Engineering",
+        year: userMeta.year || profile.year || "III Year",
+        section: userMeta.section || profile.section || "A",
         loginTime: new Date().toISOString(),
       };
       setCurrentUser(userObj);
+      setProfile((prev) => ({
+        ...prev,
+        name: userObj.name,
+        rollNumber: userObj.rollNumber,
+        department: userObj.department,
+        collegeEmail: userObj.email,
+      }));
       return data;
     } catch (err) {
-      // Fallback local sign in if network issue or demo mode
-      console.warn("Supabase auth warning, using local session:", err.message);
-      const userObj = {
-        email,
-        name: profile.name,
-        rollNumber: profile.rollNumber,
-        department: profile.department,
-        year: profile.year,
-        loginTime: new Date().toISOString(),
-      };
-      setCurrentUser(userObj);
-      return { user: userObj };
+      console.error("Supabase login error:", err);
+      throw err;
     }
   };
 

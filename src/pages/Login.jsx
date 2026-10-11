@@ -74,7 +74,13 @@ export default function Login() {
       }, 500);
     } catch (err) {
       console.error("Sign in failed:", err);
-      setError(err.message || "Failed to sign in. Please verify your email and password.");
+      let errorMsg = err.message || "Failed to sign in. Please verify your email and password.";
+      if (errorMsg.toLowerCase().includes("invalid login credentials")) {
+        errorMsg = "Invalid email or password. Please verify your credentials.";
+      } else if (errorMsg.toLowerCase().includes("email not confirmed")) {
+        errorMsg = "Email address has not been confirmed in Supabase yet.";
+      }
+      setError(errorMsg);
     } finally {
       setLoading(false);
     }
