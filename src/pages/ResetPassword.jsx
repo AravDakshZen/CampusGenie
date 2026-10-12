@@ -26,13 +26,25 @@ export default function ResetPassword() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check if user has active session or recovery session
+    // Listen for PASSWORD_RECOVERY or active recovery session
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "PASSWORD_RECOVERY" || session) {
+        setHasSession(true);
+      }
+    });
+
     supabase.auth.getSession().then(({ data: { session } }) => {
-      // If no session and no hash parameters, user might not have clicked a valid link
-      if (!session && !window.location.hash) {
+      const hash = window.location.hash || "";
+      if (session || hash.includes("type=recovery") || hash.includes("access_token")) {
+        setHasSession(true);
+      } else {
         setHasSession(false);
       }
     });
+
+    return () => {
+      subscription?.unsubscribe();
+    };
   }, []);
 
   const handleReset = async (e) => {
@@ -54,6 +66,12 @@ export default function ResetPassword() {
 
     try {
       await updateUserPassword(newPassword);
+      try {
+        await supabase.auth.signOut();
+      } catch (e) {
+        // ignore signout error
+      }
+      localStorage.removeItem("campus_genie_user");
       setSuccess("Your password has been successfully reset! Redirecting to login...");
       setTimeout(() => {
         navigate("/login");

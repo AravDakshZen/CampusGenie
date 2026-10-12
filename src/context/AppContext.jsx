@@ -108,8 +108,24 @@ export function AppProvider({ children }) {
 
     initAuth();
 
-    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "PASSWORD_RECOVERY") {
+        console.log("Supabase PASSWORD_RECOVERY event detected");
+        if (window.location.pathname !== "/reset-password") {
+          window.location.replace("/reset-password" + window.location.hash);
+        }
+        return;
+      }
+
       if (session) {
+        // If arriving from recovery link hash, do not treat as standard login
+        if (window.location.hash.includes("type=recovery") || window.location.search.includes("type=recovery")) {
+          if (window.location.pathname !== "/reset-password") {
+            window.location.replace("/reset-password" + window.location.hash);
+          }
+          return;
+        }
+
         const userMeta = session.user.user_metadata || {};
         const userObj = {
           id: session.user.id,

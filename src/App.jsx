@@ -5,6 +5,8 @@ import {
   Route,
   Navigate,
   Outlet,
+  useLocation,
+  useNavigate,
 } from "react-router-dom";
 import { AppProvider, useApp } from "./context/AppContext";
 
@@ -24,6 +26,28 @@ import LostFound from "./pages/LostFound";
 import Notifications from "./pages/Notifications";
 import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
+
+// Intercept password reset links landing on any route
+function AuthRecoveryRedirect() {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  React.useEffect(() => {
+    const hash = window.location.hash || "";
+    const search = window.location.search || "";
+    const isRecovery =
+      hash.includes("type=recovery") ||
+      search.includes("type=recovery") ||
+      (hash.includes("access_token=") && hash.includes("recovery"));
+
+    if (isRecovery && location.pathname !== "/reset-password") {
+      console.log("Intercepted recovery link, redirecting to /reset-password");
+      navigate("/reset-password" + hash + search, { replace: true });
+    }
+  }, [location, navigate]);
+
+  return null;
+}
 
 // Protected Layout
 function MainLayout() {
@@ -55,7 +79,8 @@ function MainLayout() {
 // Public Route (redirects to /assistant if already logged in)
 function PublicRoute({ children }) {
   const { currentUser } = useApp();
-  if (currentUser) {
+  // Don't redirect away if this is a recovery link
+  if (currentUser && !window.location.hash.includes("type=recovery")) {
     return <Navigate to="/assistant" replace />;
   }
   return children;
@@ -65,6 +90,7 @@ export default function App() {
   return (
     <AppProvider>
       <Router>
+        <AuthRecoveryRedirect />
         <Routes>
           {/* Authentication Routes */}
           <Route
@@ -77,11 +103,7 @@ export default function App() {
           />
           <Route
             path="/forgot-password"
-            element={
-              <PublicRoute>
-                <ForgotPassword />
-              </PublicRoute>
-            }
+            element={<ForgotPassword />}
           />
           <Route
             path="/reset-password"
