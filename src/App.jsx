@@ -14,6 +14,8 @@ import Topbar from "./components/Topbar";
 
 // Pages
 import Login from "./pages/Login";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import AIAssistant from "./pages/AIAssistant";
 import Transport from "./pages/Transport";
 import Faculty from "./pages/Faculty";
@@ -64,7 +66,7 @@ export default function App() {
     <AppProvider>
       <Router>
         <Routes>
-          {/* Login Route */}
+          {/* Authentication Routes */}
           <Route
             path="/login"
             element={
@@ -72,6 +74,18 @@ export default function App() {
                 <Login />
               </PublicRoute>
             }
+          />
+          <Route
+            path="/forgot-password"
+            element={
+              <PublicRoute>
+                <ForgotPassword />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path="/reset-password"
+            element={<ResetPassword />}
           />
 
           {/* Protected Application Routes */}

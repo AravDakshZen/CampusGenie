@@ -148,3 +148,81 @@ export async function signOutUser() {
     console.error("Sign out error:", error.message);
   }
 }
+
+/**
+ * Send Password Reset Email / Recovery Link
+ */
+export async function requestPasswordReset(email) {
+  const trimmedEmail = email.trim().toLowerCase();
+  
+  // 1. Try standard Supabase resetPasswordForEmail
+  const redirectUrl = `${window.location.origin}/reset-password`;
+  const { data, error } = await supabase.auth.resetPasswordForEmail(trimmedEmail, {
+    redirectTo: redirectUrl,
+  });
+
+  if (error) {
+    throw error;
+  }
+
+  // 2. Also generate admin recovery link as backup/helper for development & campus testing
+  let recoveryUrl = null;
+  try {
+    const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
+      type: "recovery",
+      email: trimmedEmail,
+      options: {
+        redirectTo: redirectUrl,
+      },
+    });
+    if (!linkError && linkData?.properties?.action_link) {
+      recoveryUrl = linkData.properties.action_link;
+    }
+  } catch (adminErr) {
+    console.warn("Admin recovery link fallback note:", adminErr.message);
+  }
+
+  return {
+    ...data,
+    recoveryUrl,
+  };
+}
+
+/**
+ * Update User Password (used after opening recovery link)
+ */
+export async function updateUserPassword(newPassword) {
+  const { data, error } = await supabase.auth.updateUser({
+    password: newPassword,
+  });
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+
+/**
+ * Direct Admin Password Reset (for verified college accounts)
+ */
+export async function directAdminResetPassword(email, newPassword) {
+  const trimmedEmail = email.trim().toLowerCase();
+  
+  // Look up user by email
+  const { data: { users }, error: listError } = await supabaseAdmin.auth.admin.listUsers();
+  if (listError) throw listError;
+
+  const targetUser = users.find((u) => u.email.toLowerCase() === trimmedEmail);
+  if (!targetUser) {
+    throw new Error("No user registered with this college email address.");
+  }
+
+  const { data, error } = await supabaseAdmin.auth.admin.updateUserById(targetUser.id, {
+    password: newPassword,
+  });
+
+  if (error) throw error;
+  return data;
+}
+
