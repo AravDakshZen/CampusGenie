@@ -25,6 +25,8 @@ import { useApp } from "../context/AppContext";
 
 export default function Timetable() {
   const {
+    currentUser,
+    timetableData,
     demoTime,
     demoDay,
     timetableHolds,
@@ -36,9 +38,9 @@ export default function Timetable() {
 
   const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 
-  // Find next class respecting timetable holds
-  const nextClass = getNextClass(selectedDay, demoTime, timetableHolds);
-  const classesForDay = weeklyTimetable[selectedDay] || [];
+  // Find next class respecting timetable holds and database timetable data
+  const nextClass = getNextClass(selectedDay, demoTime, timetableHolds, timetableData);
+  const classesForDay = (timetableData && timetableData[selectedDay]) || [];
   const heldCountForDay = classesForDay.filter((c) => timetableHolds.includes(c.id)).length;
 
   return (
@@ -132,7 +134,7 @@ export default function Timetable() {
       <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar border-b border-purple-100">
         {days.map((day) => {
           const isSelected = selectedDay === day;
-          const dayHolds = (weeklyTimetable[day] || []).filter((c) => timetableHolds.includes(c.id)).length;
+          const dayHolds = ((timetableData && timetableData[day]) || []).filter((c) => timetableHolds.includes(c.id)).length;
 
           return (
             <button

@@ -379,8 +379,9 @@ export const weeklyTimetable = {
  * Returns the next upcoming class based on day, current time, and hold status.
  * Skips classes that are marked ON HOLD or breaks.
  */
-export function getNextClass(day = "Monday", time = "09:30", timetableHolds = []) {
-  const schedule = weeklyTimetable[day] || weeklyTimetable["Monday"];
+export function getNextClass(day = "Monday", time = "09:30", timetableHolds = [], customTimetable = null) {
+  const currentTable = customTimetable || weeklyTimetable;
+  const schedule = currentTable[day] || currentTable["Monday"] || [];
   const upcoming = schedule.find(
     (item) => item.type !== "Break" && item.startTime >= time && !timetableHolds.includes(item.id)
   );

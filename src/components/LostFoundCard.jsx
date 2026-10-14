@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   MapPin,
   Calendar,
@@ -12,6 +12,10 @@ import StatusBadge from "./StatusBadge";
 
 export default function LostFoundCard({ item, onClaim }) {
   const [claimed, setClaimed] = useState(item.claimed || false);
+
+  useEffect(() => {
+    setClaimed(item.claimed || false);
+  }, [item.claimed]);
 
   const handleClaim = () => {
     setClaimed(true);

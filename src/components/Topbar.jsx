@@ -12,6 +12,7 @@ import { useApp } from "../context/AppContext";
 export default function Topbar() {
   const location = useLocation();
   const {
+    currentUser,
     unreadCount,
     setIsMobileMenuOpen,
     profile,
@@ -166,22 +167,29 @@ export default function Topbar() {
             )}
           </Link>
 
-          {/* Student Profile Quick Chip */}
+          {/* Profile Quick Chip */}
           <Link
             to="/profile"
             className="flex items-center gap-2.5 p-1 sm:px-3 sm:py-1.5 rounded-xl hover:bg-purple-50/70 border border-transparent hover:border-purple-200 transition-all"
           >
             <img
-              src={profile.avatar}
-              alt={profile.name}
+              src={currentUser?.role === "faculty" ? "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80" : profile.avatar}
+              alt={currentUser?.name || profile.name}
               className="w-8 h-8 rounded-full object-cover ring-2 ring-[#6D28D9]/20"
             />
             <div className="hidden sm:block text-left">
-              <p className="text-xs font-bold text-slate-800 leading-tight">
-                {profile.name}
-              </p>
+              <div className="flex items-center gap-1.5">
+                <p className="text-xs font-bold text-slate-800 leading-tight">
+                  {currentUser?.name || profile.name}
+                </p>
+                {currentUser?.role === "faculty" && (
+                  <span className="text-[9px] bg-purple-100 text-[#6D28D9] font-bold px-1.5 py-0.2 rounded-md uppercase">
+                    Faculty
+                  </span>
+                )}
+              </div>
               <p className="text-[10px] text-slate-400 font-mono">
-                {profile.rollNumber}
+                {currentUser?.role === "faculty" ? "Rajalakshmi Faculty" : currentUser?.rollNumber || profile.rollNumber}
               </p>
             </div>
           </Link>

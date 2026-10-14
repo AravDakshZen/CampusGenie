@@ -71,13 +71,14 @@ INSTRUCTIONS:
  */
 export async function callGemini(query, apiKey, options = {}) {
   const { demoTime = "14:30", demoDay = "Monday" } = options;
+  const effectiveKey = (apiKey || import.meta.env?.VITE_GEMINI_API_KEY || "").trim();
 
-  if (!apiKey || !apiKey.trim()) {
+  if (!effectiveKey) {
     throw new Error("No Gemini API key provided");
   }
 
   const systemPrompt = buildCampusKnowledgePrompt(demoTime, demoDay);
-  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey.trim()}`;
+  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${effectiveKey}`;
 
   const payload = {
     system_instruction: {

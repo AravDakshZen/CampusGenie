@@ -44,12 +44,22 @@ export async function signInUser(email, password) {
   if (data?.user) {
     try {
       const meta = data.user.user_metadata || {};
+      const role = meta.role || (email.includes(".s@") || email.includes(".k@") || email.includes(".m@") ? "faculty" : "student");
+      let facultyId = meta.faculty_id || null;
+      if (!facultyId && role === "faculty") {
+        if (email.includes("revathi")) facultyId = "fac-revathi";
+        else if (email.includes("arun")) facultyId = "fac-arun";
+        else if (email.includes("priya")) facultyId = "fac-priya";
+      }
+
       await supabase.from("profiles").upsert(
         {
           id: data.user.id,
           email: data.user.email,
           full_name: meta.full_name || email.split("@")[0],
-          roll_number: meta.roll_number || null,
+          role,
+          faculty_id: facultyId,
+          roll_number: meta.roll_number || (role === "student" ? "23CSD101" : null),
           department: meta.department || "Computer Science and Engineering",
           year: meta.year || "III Year",
           section: meta.section || "A",
@@ -224,5 +234,197 @@ export async function directAdminResetPassword(email, newPassword) {
 
   if (error) throw error;
   return data;
+}
+
+/**
+ * Faculty Database Operations
+ */
+export async function getFacultyFromDB() {
+  const { data, error } = await supabase.from("faculty").select("*");
+  if (error) throw error;
+  return data;
+}
+
+export async function updateFacultyStatusInDB(facultyId, status) {
+  const { data, error } = await supabase
+    .from("faculty")
+    .update({ status, updated_at: new Date().toISOString() })
+    .eq("id", facultyId)
+    .select();
+  if (error) throw error;
+  return data;
+}
+
+/**
+ * Timetables Database Operations
+ */
+export async function getTimetableFromDB() {
+  const { data, error } = await supabase
+    .from("timetables")
+    .select("*")
+    .order("period_number", { ascending: true });
+  if (error) throw error;
+  return data;
+}
+
+export async function updateTimetableHoldInDB(classId, isHeld) {
+  const { data, error } = await supabase
+    .from("timetables")
+    .update({ is_held: isHeld })
+    .eq("id", classId)
+    .select();
+  if (error) throw error;
+  return data;
+}
+
+/**
+ * Faculty Inquiries (Student asks if teacher is free, Teacher responds)
+ */
+export async function getFacultyInquiriesFromDB(facultyId = null) {
+  let query = supabase.from("faculty_inquiries").select("*").order("created_at", { ascending: false });
+  if (facultyId) {
+    query = query.eq("faculty_id", facultyId);
+  }
+  const { data, error } = await query;
+  if (error) throw error;
+  return data;
+}
+
+export async function createFacultyInquiryInDB({ facultyId, facultyName, studentName, studentEmail, studentRoll, message }) {
+  const { data, error } = await supabase
+    .from("faculty_inquiries")
+    .insert([
+      {
+        faculty_id: facultyId,
+        faculty_name: facultyName,
+        student_name: studentName,
+        student_email: studentEmail,
+        student_roll: studentRoll,
+        message,
+        status: "pending",
+      },
+    ])
+    .select();
+  if (error) throw error;
+  return data?.[0];
+}
+
+export async function respondToFacultyInquiryInDB(inquiryId, { status, replyText }) {
+  const { data, error } = await supabase
+    .from("faculty_inquiries")
+    .update({
+      status,
+      reply_text: replyText,
+      responded_at: new Date().toISOString(),
+    })
+    .eq("id", inquiryId)
+    .select();
+  if (error) throw error;
+  return data?.[0];
+}
+
+/**
+ * Lost & Found Database Operations
+ */
+export async function getLostFoundFromDB() {
+  const { data, error } = await supabase
+    .from("lost_found")
+    .select("*")
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return data;
+}
+
+export async function addLostFoundItemToDB(item) {
+  const payload = {
+    id: item.id || `lf-${Date.now()}`,
+    title: item.title,
+    category: item.category || "Other",
+    type: item.type,
+    location: item.location,
+    date: item.date || "Just now",
+    status: item.status || (item.type === "found" ? "Found" : "Lost"),
+    status_color: item.statusColor || (item.type === "found" ? "emerald" : "amber"),
+    description: item.description,
+    contact_person: item.contactPerson || null,
+    contact_location: item.contactLocation || null,
+    image: item.image || null,
+    claimed: false,
+  };
+  const { data, error } = await supabase
+    .from("lost_found")
+    .insert([payload])
+    .select();
+  if (error) throw error;
+  return data?.[0];
+}
+
+export async function claimLostFoundItemInDB(itemId, claimedBy = "Student") {
+  const { data, error } = await supabase
+    .from("lost_found")
+    .update({ claimed: true, claimed_by: claimedBy })
+    .eq("id", itemId)
+    .select();
+  if (error) throw error;
+  return data?.[0];
+}
+
+/**
+ * Ensure Demo Accounts Exist (Students & Teachers)
+ */
+export async function ensureDemoAccounts() {
+  const demoUsers = [
+    {
+      email: "student@rajalakshmi.edu.in",
+      password: "campusgenie123",
+      fullName: "Yashawini S.",
+      role: "student",
+      rollNumber: "23CSD101",
+      department: "Computer Science and Engineering",
+    },
+    {
+      email: "revathi.s@rajalakshmi.edu.in",
+      password: "campusgenie123",
+      fullName: "Dr. Revathi S.",
+      role: "faculty",
+      facultyId: "fac-revathi",
+      department: "Computer Science and Engineering",
+    },
+    {
+      email: "arunkumar.k@rajalakshmi.edu.in",
+      password: "campusgenie123",
+      fullName: "Dr. Arun Kumar K.",
+      role: "faculty",
+      facultyId: "fac-arun",
+      department: "Artificial Intelligence & Data Science",
+    },
+    {
+      email: "priyadharshini.m@rajalakshmi.edu.in",
+      password: "campusgenie123",
+      fullName: "Dr. Priya Dharshini M.",
+      role: "faculty",
+      facultyId: "fac-priya",
+      department: "Computer Science and Engineering",
+    },
+  ];
+
+  for (const user of demoUsers) {
+    try {
+      await supabaseAdmin.auth.admin.createUser({
+        email: user.email,
+        password: user.password,
+        email_confirm: true,
+        user_metadata: {
+          full_name: user.fullName,
+          role: user.role,
+          roll_number: user.rollNumber || null,
+          faculty_id: user.facultyId || null,
+          department: user.department,
+        },
+      });
+    } catch (e) {
+      // Ignored if user already registered
+    }
+  }
 }
 

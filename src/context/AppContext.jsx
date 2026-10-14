@@ -1,9 +1,24 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { initialNotifications } from "../data/notificationData";
 import { initialLostFoundItems } from "../data/lostFoundData";
-import { studentInfo } from "../data/timetableData";
+import { studentInfo, weeklyTimetable } from "../data/timetableData";
 import { facultyList, getFacultyAvailability } from "../data/facultyData";
-import { supabase, signInUser, signUpUser, signOutUser } from "../lib/supabase";
+import {
+  supabase,
+  signInUser,
+  signUpUser,
+  signOutUser,
+  getFacultyFromDB,
+  updateFacultyStatusInDB,
+  getTimetableFromDB,
+  getFacultyInquiriesFromDB,
+  createFacultyInquiryInDB,
+  respondToFacultyInquiryInDB,
+  getLostFoundFromDB,
+  addLostFoundItemToDB,
+  claimLostFoundItemInDB,
+  ensureDemoAccounts,
+} from "../lib/supabase";
 
 const AppContext = createContext(null);
 
@@ -15,6 +30,40 @@ export function AppProvider({ children }) {
   });
 
   const [authLoading, setAuthLoading] = useState(true);
+
+  // Faculty Dataset State (Synchronized with Database)
+  const [facultyData, setFacultyData] = useState(() => {
+    const saved = localStorage.getItem("campus_genie_faculty");
+    return saved ? JSON.parse(saved) : facultyList;
+  });
+
+  // Timetable Dataset State (Synchronized with Database)
+  const [timetableData, setTimetableData] = useState(() => {
+    const saved = localStorage.getItem("campus_genie_timetable");
+    return saved ? JSON.parse(saved) : weeklyTimetable;
+  });
+
+  // Faculty Inquiries State (Student asks if teacher is free, teacher replies)
+  const [facultyInquiries, setFacultyInquiries] = useState(() => {
+    const saved = localStorage.getItem("campus_genie_inquiries");
+    return saved
+      ? JSON.parse(saved)
+      : [
+          {
+            id: "inq-demo-1",
+            faculty_id: "fac-revathi",
+            faculty_name: "Dr. Revathi S.",
+            student_name: "Yashawini S.",
+            student_email: "student@rajalakshmi.edu.in",
+            student_roll: "23CSD101",
+            message: "Good afternoon Ma'am! Are you free right now in cabin CSE-204 for DBMS project clarification?",
+            status: "available",
+            reply_text: "Yes Yashawini! I am in cabin CSE-204 right now until 4:00 PM. Please bring your project report.",
+            responded_at: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
+            created_at: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
+          },
+        ];
+  });
 
   // Notifications State
   const [notifications, setNotifications] = useState(() => {
@@ -53,9 +102,13 @@ export function AppProvider({ children }) {
   // Chat prefilled question (when clicking "Ask AI" from other pages)
   const [activeChatPrompt, setActiveChatPrompt] = useState("");
 
-  // Gemini API Key (stored locally so user can test Gemini freely)
+  // Gemini API Key (stored in env or locally)
   const [geminiApiKey, setGeminiApiKey] = useState(() => {
-    return localStorage.getItem("campus_genie_gemini_key") || "";
+    return (
+      import.meta.env.VITE_GEMINI_API_KEY ||
+      localStorage.getItem("campus_genie_gemini_key") ||
+      ""
+    );
   });
 
   // Settings
@@ -177,14 +230,212 @@ export function AppProvider({ children }) {
     localStorage.setItem("campus_genie_profile", JSON.stringify(profile));
   }, [profile]);
 
+  // Save state to localStorage
+  useEffect(() => {
+    localStorage.setItem("campus_genie_faculty", JSON.stringify(facultyData));
+  }, [facultyData]);
+
+  useEffect(() => {
+    localStorage.setItem("campus_genie_timetable", JSON.stringify(timetableData));
+  }, [timetableData]);
+
+  useEffect(() => {
+    localStorage.setItem("campus_genie_inquiries", JSON.stringify(facultyInquiries));
+  }, [facultyInquiries]);
+
+  // Fetch initial data from Database on mount and ensure demo accounts exist
+  useEffect(() => {
+    ensureDemoAccounts().catch(() => {});
+
+    async function loadDBData() {
+      // 1. Fetch Faculty from DB
+      try {
+        const dbFaculty = await getFacultyFromDB();
+        if (dbFaculty && dbFaculty.length > 0) {
+          const mapped = dbFaculty.map((f) => ({
+            id: f.id,
+            name: f.name,
+            shortName: f.short_name,
+            searchAliases: [f.short_name.toLowerCase(), f.name.toLowerCase()],
+            designation: f.designation,
+            department: f.department,
+            deptCode: f.dept_code,
+            cabin: f.cabin,
+            cabinLocation: f.cabin_location,
+            email: f.email,
+            phone: f.phone,
+            avatar: f.avatar,
+            specialization: f.specialization,
+            subjectsTaught: f.subjects_taught || [],
+            defaultAvailableTimeText: f.default_available_time_text,
+            status: f.status || "Auto",
+            schedule: f.schedule || [],
+          }));
+          setFacultyData(mapped);
+        }
+      } catch (err) {
+        console.warn("Using fallback faculty dataset:", err.message);
+      }
+
+      // 2. Fetch Timetable from DB
+      try {
+        const dbTimetable = await getTimetableFromDB();
+        if (dbTimetable && dbTimetable.length > 0) {
+          const grouped = {};
+          dbTimetable.forEach((row) => {
+            if (!grouped[row.day]) grouped[row.day] = [];
+            grouped[row.day].push({
+              id: row.id,
+              time: row.time,
+              startTime: row.start_time,
+              endTime: row.end_time,
+              subject: row.subject,
+              code: row.code,
+              room: row.room,
+              block: row.block,
+              faculty: row.faculty_name,
+              facultyId: row.faculty_id,
+              type: row.type,
+              isHeld: row.is_held,
+            });
+          });
+          setTimetableData(grouped);
+        }
+      } catch (err) {
+        console.warn("Using fallback timetable dataset:", err.message);
+      }
+
+      // 3. Fetch Inquiries from DB
+      try {
+        const dbInquiries = await getFacultyInquiriesFromDB();
+        if (dbInquiries && dbInquiries.length > 0) {
+          setFacultyInquiries(dbInquiries);
+        }
+      } catch (err) {
+        console.warn("Using fallback inquiries dataset:", err.message);
+      }
+
+      // 4. Fetch Lost & Found from DB
+      try {
+        const dbLostFound = await getLostFoundFromDB();
+        if (dbLostFound && dbLostFound.length > 0) {
+          setLostFoundItems(
+            dbLostFound.map((item) => ({
+              id: item.id,
+              title: item.title,
+              category: item.category,
+              type: item.type,
+              location: item.location,
+              date: item.date,
+              status: item.status,
+              statusColor: item.status_color || (item.type === "found" ? "emerald" : "amber"),
+              description: item.description,
+              contactPerson: item.contact_person,
+              contactLocation: item.contact_location,
+              image: item.image,
+              claimed: Boolean(item.claimed),
+              claimedBy: item.claimed_by,
+              createdAt: item.created_at,
+            }))
+          );
+        }
+      } catch (err) {
+        console.warn("Using fallback lost & found dataset:", err.message);
+      }
+    }
+
+    loadDBData();
+
+    // Set up Realtime subscriptions for inquiries, faculty & lost_found if table exists
+    const channel = supabase
+      .channel("campus_db_changes")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "faculty_inquiries" },
+        async () => {
+          try {
+            const freshInquiries = await getFacultyInquiriesFromDB();
+            if (freshInquiries) setFacultyInquiries(freshInquiries);
+          } catch (e) {}
+        }
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "lost_found" },
+        async () => {
+          try {
+            const freshLostFound = await getLostFoundFromDB();
+            if (freshLostFound && freshLostFound.length > 0) {
+              setLostFoundItems(
+                freshLostFound.map((item) => ({
+                  id: item.id,
+                  title: item.title,
+                  category: item.category,
+                  type: item.type,
+                  location: item.location,
+                  date: item.date,
+                  status: item.status,
+                  statusColor: item.status_color || (item.type === "found" ? "emerald" : "amber"),
+                  description: item.description,
+                  contactPerson: item.contact_person,
+                  contactLocation: item.contact_location,
+                  image: item.image,
+                  claimed: Boolean(item.claimed),
+                  claimedBy: item.claimed_by,
+                  createdAt: item.created_at,
+                }))
+              );
+            }
+          } catch (e) {}
+        }
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "faculty" },
+        async () => {
+          try {
+            const freshFaculty = await getFacultyFromDB();
+            if (freshFaculty) {
+              setFacultyData((prev) =>
+                freshFaculty.map((f) => ({
+                  id: f.id,
+                  name: f.name,
+                  shortName: f.short_name,
+                  searchAliases: [f.short_name.toLowerCase(), f.name.toLowerCase()],
+                  designation: f.designation,
+                  department: f.department,
+                  deptCode: f.dept_code,
+                  cabin: f.cabin,
+                  cabinLocation: f.cabin_location,
+                  email: f.email,
+                  phone: f.phone,
+                  avatar: f.avatar,
+                  specialization: f.specialization,
+                  subjectsTaught: f.subjects_taught || [],
+                  defaultAvailableTimeText: f.default_available_time_text,
+                  status: f.status || "Auto",
+                  schedule: f.schedule || [],
+                }))
+              );
+            }
+          } catch (e) {}
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
   // Dynamically synchronize notifications based on schedule and demo time
   useEffect(() => {
-    const revathi = facultyList.find((f) => f.id === "fac-revathi");
-    const revathiAvail = revathi ? getFacultyAvailability(revathi, demoTime, demoDay) : null;
+    const revathi = facultyData.find((f) => f.id === "fac-revathi");
+    const revathiAvail = revathi ? getFacultyAvailability(revathi, demoTime, demoDay, revathi.status !== "Auto" ? revathi.status : null) : null;
     const isRevathiAvailable = revathiAvail?.status === "Available Now";
 
-    const arun = facultyList.find((f) => f.id === "fac-arun");
-    const arunAvail = arun ? getFacultyAvailability(arun, demoTime, demoDay) : null;
+    const arun = facultyData.find((f) => f.id === "fac-arun");
+    const arunAvail = arun ? getFacultyAvailability(arun, demoTime, demoDay, arun.status !== "Auto" ? arun.status : null) : null;
     const isArunAvailable = arunAvail?.status === "Available Now";
 
     setNotifications((prev) => {
@@ -244,18 +495,28 @@ export function AppProvider({ children }) {
 
       return updated;
     });
-  }, [demoTime, demoDay]);
+  }, [demoTime, demoDay, facultyData]);
 
   // Auth actions
   const login = async (email, password = "campusgenie123") => {
     try {
       const data = await signInUser(email, password);
       const userMeta = data.user?.user_metadata || {};
+      const role = userMeta.role || (email.includes(".s@") || email.includes(".k@") || email.includes(".m@") ? "faculty" : "student");
+      let facultyId = userMeta.faculty_id || null;
+      if (!facultyId && role === "faculty") {
+        if (email.includes("revathi")) facultyId = "fac-revathi";
+        else if (email.includes("arun")) facultyId = "fac-arun";
+        else if (email.includes("priya")) facultyId = "fac-priya";
+      }
+
       const userObj = {
         id: data.user?.id,
         email: data.user?.email || email,
-        name: userMeta.full_name || profile.name || "Student",
-        rollNumber: userMeta.roll_number || profile.rollNumber || "23CSD101",
+        name: userMeta.full_name || (role === "faculty" ? "Faculty Professor" : profile.name || "Student"),
+        role,
+        facultyId,
+        rollNumber: userMeta.roll_number || (role === "student" ? profile.rollNumber || "23CSD101" : null),
         department: userMeta.department || profile.department || "Computer Science and Engineering",
         year: userMeta.year || profile.year || "III Year",
         section: userMeta.section || profile.section || "A",
@@ -283,6 +544,8 @@ export function AppProvider({ children }) {
         id: data.user?.id,
         email: userData.email,
         name: userData.fullName,
+        role: "student",
+        facultyId: null,
         rollNumber: userData.rollNumber,
         department: userData.department,
         year: userData.year || "III Year",
@@ -313,13 +576,120 @@ export function AppProvider({ children }) {
     localStorage.removeItem("campus_genie_user");
   };
 
+  // Student Sends Inquiry to Teacher ("Is Ma'am / Sir Free?")
+  const sendFacultyInquiry = async ({ facultyId, facultyName, message }) => {
+    const studentName = currentUser?.name || profile.name || "Yashawini S.";
+    const studentEmail = currentUser?.email || profile.collegeEmail || "student@rajalakshmi.edu.in";
+    const studentRoll = currentUser?.rollNumber || profile.rollNumber || "23CSD101";
+
+    const newInquiry = {
+      id: `inq-${Date.now()}`,
+      faculty_id: facultyId,
+      faculty_name: facultyName,
+      student_id: currentUser?.id,
+      student_name: studentName,
+      student_email: studentEmail,
+      student_roll: studentRoll,
+      message,
+      status: "pending",
+      reply_text: null,
+      responded_at: null,
+      created_at: new Date().toISOString(),
+    };
+
+    // Optimistically update
+    setFacultyInquiries((prev) => [newInquiry, ...prev]);
+
+    // Send to Supabase DB
+    try {
+      const created = await createFacultyInquiryInDB({
+        facultyId,
+        facultyName,
+        studentName,
+        studentEmail,
+        studentRoll,
+        message,
+      });
+      if (created) {
+        setFacultyInquiries((prev) =>
+          prev.map((item) => (item.id === newInquiry.id ? created : item))
+        );
+      }
+    } catch (err) {
+      console.warn("Stored inquiry locally, database sync note:", err.message);
+    }
+
+    // Add local notification
+    addNotification({
+      title: `Inquiry sent to ${facultyName}`,
+      subtitle: `Waiting for teacher response on cabin availability`,
+      category: "faculty",
+      icon: "Send",
+      actionLink: "/faculty",
+      details: `You sent an availability inquiry to ${facultyName}: "${message}"`,
+    });
+  };
+
+  // Teacher Responds to Inquiry
+  const respondToFacultyInquiry = async (inquiryId, status, replyText) => {
+    setFacultyInquiries((prev) =>
+      prev.map((inq) =>
+        inq.id === inquiryId
+          ? {
+              ...inq,
+              status,
+              reply_text: replyText,
+              responded_at: new Date().toISOString(),
+            }
+          : inq
+      )
+    );
+
+    try {
+      await respondToFacultyInquiryInDB(inquiryId, { status, replyText });
+    } catch (err) {
+      console.warn("DB response sync note:", err.message);
+    }
+
+    addNotification({
+      title: `Response sent to student`,
+      subtitle: replyText,
+      category: "faculty",
+      icon: "CheckCircle2",
+      priority: "high",
+      actionLink: "/faculty",
+      details: `You responded: "${replyText}"`,
+    });
+  };
+
+  // Teacher Updates their Live Cabin Availability in Database
+  const updateFacultyCabinStatus = async (facultyId, status) => {
+    setFacultyData((prev) =>
+      prev.map((f) => (f.id === facultyId ? { ...f, status } : f))
+    );
+
+    try {
+      await updateFacultyStatusInDB(facultyId, status);
+    } catch (err) {
+      console.warn("DB status update note:", err.message);
+    }
+
+    addNotification({
+      title: `Cabin status updated`,
+      subtitle: `Marked as: ${status}`,
+      category: "faculty",
+      icon: "Clock",
+      actionLink: "/faculty",
+      details: `Your live cabin status was updated to: ${status}. Students will see this live.`,
+    });
+  };
+
   // Timetable Hold Actions
   const toggleTimetableHold = (classId) => {
     setTimetableHolds((prev) => {
       const exists = prev.includes(classId);
       const next = exists ? prev.filter((id) => id !== classId) : [...prev, classId];
       
-      // Notify student
       addNotification({
         title: exists ? `Class resumed` : `Class marked ON HOLD`,
         subtitle: `Timetable schedule updated for period ${classId}.`,
@@ -373,17 +743,17 @@ export function AppProvider({ children }) {
   };
 
   // Lost & Found actions
-  const addLostFoundItem = (item) => {
+  const addLostFoundItem = async (item) => {
     const newItem = {
-      id: `lf-${Date.now()}`,
-      date: "Just now",
+      id: item.id || `lf-${Date.now()}`,
+      date: item.date || "Just now",
       statusColor: item.type === "found" ? "emerald" : "amber",
       claimed: false,
       ...item,
     };
+    // Optimistic UI update
     setLostFoundItems((prev) => [newItem, ...prev]);
 
-    // Also trigger notification
     addNotification({
       title: `New ${newItem.status} Item: ${newItem.title}`,
       subtitle: `Location: ${newItem.location}`,
@@ -392,6 +762,36 @@ export function AppProvider({ children }) {
       actionLink: "/lost-found",
       details: newItem.description,
     });
+
+    // Save to Supabase DB
+    try {
+      await addLostFoundItemToDB(newItem);
+    } catch (err) {
+      console.warn("Could not save lost & found item to Supabase:", err.message);
+    }
+  };
+
+  const claimLostFoundItem = async (itemId) => {
+    // Optimistic UI update
+    setLostFoundItems((prev) =>
+      prev.map((item) => (item.id === itemId ? { ...item, claimed: true } : item))
+    );
+
+    addNotification({
+      title: "Claim request submitted",
+      subtitle: "Campus security desk has been notified regarding your item claim.",
+      category: "lost_found",
+      icon: "CheckCircle",
+      actionLink: "/lost-found",
+      details: "Your claim has been logged with campus security.",
+    });
+
+    // Save to Supabase DB
+    try {
+      await claimLostFoundItemInDB(itemId, currentUser?.name || profile?.name || "Student");
+    } catch (err) {
+      console.warn("Could not update claim in Supabase:", err.message);
+    }
   };
 
   // Toggle faculty alert
@@ -423,10 +823,19 @@ export function AppProvider({ children }) {
     <AppContext.Provider
       value={{
         currentUser,
+        setCurrentUser,
         authLoading,
         login,
         signup,
         logout,
+        facultyData,
+        setFacultyData,
+        timetableData,
+        setTimetableData,
+        facultyInquiries,
+        sendFacultyInquiry,
+        respondToFacultyInquiry,
+        updateFacultyCabinStatus,
         notifications,
         unreadCount,
         markAsRead,
@@ -436,6 +845,7 @@ export function AppProvider({ children }) {
         addNotification,
         lostFoundItems,
         addLostFoundItem,
+        claimLostFoundItem,
         profile,
         updateProfile,
         facultyAlerts,

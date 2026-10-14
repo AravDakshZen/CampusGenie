@@ -14,7 +14,7 @@ import { useApp } from "../context/AppContext";
 import LostFoundCard from "../components/LostFoundCard";
 
 export default function LostFound() {
-  const { lostFoundItems, addLostFoundItem } = useApp();
+  const { lostFoundItems, addLostFoundItem, claimLostFoundItem } = useApp();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState("all"); // 'all', 'lost', 'found'
 
@@ -26,6 +26,7 @@ export default function LostFound() {
   const [formLocation, setFormLocation] = useState("");
   const [formDescription, setFormDescription] = useState("");
   const [formContact, setFormContact] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const categories = ["Electronics", "Bags", "Identity", "Books & Stationery", "Accessories", "Other"];
 
@@ -56,21 +57,25 @@ export default function LostFound() {
     setIsModalOpen(true);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formTitle.trim() || !formLocation.trim() || !formDescription.trim()) return;
 
-    addLostFoundItem({
-      title: formTitle.trim(),
-      category: formCategory,
-      type: reportType,
-      status: reportType === "found" ? "Found" : "Lost",
-      location: formLocation.trim(),
-      description: formDescription.trim(),
-      contactPerson: formContact.trim() || "Student Desk",
-    });
-
-    setIsModalOpen(false);
+    setIsSubmitting(true);
+    try {
+      await addLostFoundItem({
+        title: formTitle.trim(),
+        category: formCategory,
+        type: reportType,
+        status: reportType === "found" ? "Found" : "Lost",
+        location: formLocation.trim(),
+        description: formDescription.trim(),
+        contactPerson: formContact.trim() || "Student Desk",
+      });
+      setIsModalOpen(false);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -182,7 +187,7 @@ export default function LostFound() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {filteredItems.map((item) => (
-            <LostFoundCard key={item.id} item={item} />
+            <LostFoundCard key={item.id} item={item} onClaim={claimLostFoundItem} />
           ))}
         </div>
       )}
@@ -296,13 +301,16 @@ export default function LostFound() {
                 </button>
                 <button
                   type="submit"
-                  className={`px-5 py-2.5 rounded-xl text-white font-bold text-xs shadow-md ${
+                  disabled={isSubmitting}
+                  className={`px-5 py-2.5 rounded-xl text-white font-bold text-xs shadow-md transition-all ${
+                    isSubmitting ? "opacity-75 cursor-not-allowed" : ""
+                  } ${
                     reportType === "found"
                       ? "bg-emerald-600 hover:bg-emerald-700"
                       : "bg-[#6D28D9] hover:bg-[#4C1D95]"
                   }`}
                 >
-                  Publish Report
+                  {isSubmitting ? "Saving to Database..." : "Publish Report"}
                 </button>
               </div>
             </form>

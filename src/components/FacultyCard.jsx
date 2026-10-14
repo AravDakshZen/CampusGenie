@@ -14,20 +14,32 @@ import {
   ChevronUp,
   CheckCircle2,
   XCircle,
+  MessageSquare,
+  Send,
 } from "lucide-react";
 import StatusBadge from "./StatusBadge";
 import { getFacultyAvailability } from "../data/facultyData";
 import { useApp } from "../context/AppContext";
 
-export default function FacultyCard({ faculty }) {
-  const { demoTime, demoDay, facultyAlerts, toggleFacultyAlert, setActiveChatPrompt } =
-    useApp();
+export default function FacultyCard({ faculty, onInquire }) {
+  const {
+    demoTime,
+    demoDay,
+    facultyAlerts,
+    toggleFacultyAlert,
+    setActiveChatPrompt,
+    facultyInquiries,
+  } = useApp();
   const navigate = useNavigate();
   const [showSchedule, setShowSchedule] = useState(false);
 
-  // Calculated availability from schedule and demo time
-  const availability = getFacultyAvailability(faculty, demoTime, demoDay);
+  // Calculated availability from schedule, demo time, and database status override
+  const statusOverride = faculty.status && faculty.status !== "Auto" ? faculty.status : null;
+  const availability = getFacultyAvailability(faculty, demoTime, demoDay, statusOverride);
   const isSubscribed = facultyAlerts.includes(faculty.id);
+
+  // Find recent inquiry for this faculty
+  const latestInquiry = facultyInquiries?.find((inq) => inq.faculty_id === faculty.id);
 
   const handleAskAI = () => {
     setActiveChatPrompt(`Is ${faculty.shortName} available now?`);
@@ -69,7 +81,7 @@ export default function FacultyCard({ faculty }) {
         </div>
 
         {/* Status Badge Full Width */}
-        <div className="mb-4">
+        <div className="mb-3">
           <StatusBadge status={availability.status} size="lg" />
           <p className="text-xs text-slate-500 mt-1.5 pl-1 font-medium flex items-center gap-1.5">
             {availability.status === "Available Now" ? (
@@ -80,6 +92,36 @@ export default function FacultyCard({ faculty }) {
             <span>{availability.detail}</span>
           </p>
         </div>
+
+        {/* Live Student Inquiry / Teacher Response Banner if present */}
+        {latestInquiry && (
+          <div className="mb-3 p-2.5 rounded-xl text-xs bg-indigo-50/70 border border-indigo-100/80">
+            <div className="flex items-center justify-between text-[11px] font-bold text-indigo-950 mb-1">
+              <span className="flex items-center gap-1">
+                <MessageSquare className="w-3 h-3 text-indigo-600" />
+                <span>Student Inquiry & Response:</span>
+              </span>
+              <span
+                className={`px-1.5 py-0.2 rounded text-[10px] font-bold ${
+                  latestInquiry.reply_text
+                    ? "bg-emerald-100 text-emerald-800"
+                    : "bg-amber-100 text-amber-800"
+                }`}
+              >
+                {latestInquiry.reply_text ? "Responded" : "Pending"}
+              </span>
+            </div>
+            {latestInquiry.reply_text ? (
+              <p className="text-[11px] text-emerald-900 font-medium bg-emerald-50/80 p-1.5 rounded-lg border border-emerald-100 mt-1">
+                <strong>{faculty.shortName}:</strong> "{latestInquiry.reply_text}"
+              </p>
+            ) : (
+              <p className="text-[11px] text-slate-600 italic">
+                Inquiry sent by {latestInquiry.student_name}: "{latestInquiry.message.slice(0, 50)}..."
+              </p>
+            )}
+          </div>
+        )}
 
         {/* Cabin & Available Hours Info */}
         <div className="space-y-2 p-3 bg-[#FAF9FF] rounded-xl border border-purple-50 text-xs mb-3">
@@ -186,37 +228,47 @@ export default function FacultyCard({ faculty }) {
         </div>
       </div>
 
-      {/* Footer Controls: Notify Toggle & Ask AI */}
-      <div className="pt-3 border-t border-purple-50 flex items-center gap-2">
+      {/* Footer Controls: Ask If Free, Notify Toggle & Ask AI */}
+      <div className="pt-3 border-t border-purple-50 space-y-2">
         <button
-          onClick={() => toggleFacultyAlert(faculty.id, faculty.shortName)}
-          className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold border transition-all ${
-            isSubscribed
-              ? "bg-purple-100 text-[#6D28D9] border-purple-300 shadow-inner"
-              : "border-purple-200 text-slate-700 hover:bg-purple-50"
-          }`}
-          title={isSubscribed ? "Alert active" : "Enable notification when available"}
+          onClick={() => onInquire && onInquire(faculty)}
+          className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-purple-50 hover:bg-purple-100 text-[#6D28D9] font-bold text-xs border border-purple-200 transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
         >
-          {isSubscribed ? (
-            <>
-              <Bell className="w-3.5 h-3.5 fill-purple-600 text-purple-600" />
-              <span>Notifying</span>
-            </>
-          ) : (
-            <>
-              <Bell className="w-3.5 h-3.5" />
-              <span>Notify Me</span>
-            </>
-          )}
+          <MessageSquare className="w-3.5 h-3.5 text-[#6D28D9]" />
+          <span>Ask if {faculty.shortName} is Free</span>
         </button>
 
-        <button
-          onClick={handleAskAI}
-          className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-[#6D28D9] hover:bg-[#4C1D95] text-white shadow-sm shadow-purple-600/20 transition-all hover:scale-[1.02]"
-        >
-          <Sparkles className="w-3.5 h-3.5" />
-          <span>Ask AI</span>
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => toggleFacultyAlert(faculty.id, faculty.shortName)}
+            className={`flex-1 flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-xl text-xs font-semibold border transition-all ${
+              isSubscribed
+                ? "bg-purple-100 text-[#6D28D9] border-purple-300 shadow-inner"
+                : "border-purple-200 text-slate-700 hover:bg-purple-50"
+            }`}
+            title={isSubscribed ? "Alert active" : "Enable notification when available"}
+          >
+            {isSubscribed ? (
+              <>
+                <Bell className="w-3.5 h-3.5 fill-purple-600 text-purple-600" />
+                <span>Notifying</span>
+              </>
+            ) : (
+              <>
+                <Bell className="w-3.5 h-3.5" />
+                <span>Notify Me</span>
+              </>
+            )}
+          </button>
+
+          <button
+            onClick={handleAskAI}
+            className="flex-1 flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-xl text-xs font-semibold bg-[#6D28D9] hover:bg-[#4C1D95] text-white shadow-sm shadow-purple-600/20 transition-all hover:scale-[1.02]"
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Ask AI</span>
+          </button>
+        </div>
       </div>
     </div>
   );

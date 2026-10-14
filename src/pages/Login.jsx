@@ -426,26 +426,46 @@ export default function Login() {
 
         {/* Quick Demo Credentials Helper */}
         <div className="mt-5 pt-4 border-t border-purple-100 text-center">
-          <p className="text-xs text-slate-500 font-medium mb-2">
-            Try with verified test account:
+          <p className="text-xs text-slate-500 font-bold mb-2">
+            1-Click Test Accounts (Students & Teachers):
           </p>
-          <div className="flex flex-wrap gap-2 justify-center">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-left">
             <button
               type="button"
               onClick={() => handlePresetFill("student@rajalakshmi.edu.in", "campusgenie123")}
-              className="px-2.5 py-1 rounded-lg bg-purple-50 text-[#6D28D9] text-xs font-semibold hover:bg-purple-100 border border-purple-200 transition-colors"
+              className="p-2 rounded-xl bg-purple-50 text-[#6D28D9] text-xs font-semibold hover:bg-purple-100 border border-purple-200 transition-colors cursor-pointer"
             >
-              ✅ student@rajalakshmi.edu.in
+              <span className="block font-bold">👩‍🎓 Student: Yashawini S.</span>
+              <span className="text-[10px] text-slate-500 font-mono">student@rajalakshmi.edu.in</span>
             </button>
             <button
               type="button"
-              onClick={() => handlePresetFill("test@gmail.com", "campusgenie123")}
-              className="px-2.5 py-1 rounded-lg bg-rose-50 text-rose-700 text-xs font-semibold hover:bg-rose-100 border border-rose-200 transition-colors"
-              title="Test invalid domain rejection"
+              onClick={() => handlePresetFill("revathi.s@rajalakshmi.edu.in", "campusgenie123")}
+              className="p-2 rounded-xl bg-indigo-50 text-indigo-700 text-xs font-semibold hover:bg-indigo-100 border border-indigo-200 transition-colors cursor-pointer"
             >
-              ❌ test@gmail.com
+              <span className="block font-bold">👩‍🏫 Teacher: Dr. Revathi S.</span>
+              <span className="text-[10px] text-slate-500 font-mono">revathi.s@rajalakshmi.edu.in</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handlePresetFill("arunkumar.k@rajalakshmi.edu.in", "campusgenie123")}
+              className="p-2 rounded-xl bg-indigo-50 text-indigo-700 text-xs font-semibold hover:bg-indigo-100 border border-indigo-200 transition-colors cursor-pointer"
+            >
+              <span className="block font-bold">👨‍🏫 Teacher: Dr. Arun Sir</span>
+              <span className="text-[10px] text-slate-500 font-mono">arunkumar.k@rajalakshmi.edu.in</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handlePresetFill("priyadharshini.m@rajalakshmi.edu.in", "campusgenie123")}
+              className="p-2 rounded-xl bg-indigo-50 text-indigo-700 text-xs font-semibold hover:bg-indigo-100 border border-indigo-200 transition-colors cursor-pointer"
+            >
+              <span className="block font-bold">👩‍🏫 Teacher: Dr. Priya Ma'am</span>
+              <span className="text-[10px] text-slate-500 font-mono">priyadharshini.m@rajalakshmi.edu.in</span>
             </button>
           </div>
+          <p className="text-[10px] text-slate-400 mt-2">
+            Password for all test accounts: <span className="font-mono font-bold text-slate-700">campusgenie123</span>
+          </p>
         </div>
 
         {/* Security & Supabase Status Badge */}
